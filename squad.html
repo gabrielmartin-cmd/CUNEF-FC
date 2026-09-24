@@ -13,26 +13,24 @@
     <!-- Compatibility with older browsers -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Page adapts to mobile and tablets -->
-    <title>CUNEF FC SQUAD</title>
-    <!-- The title that appears in the browser tab -->
-    <link rel="stylesheet" href="Styles.css">
+    <title>Squad — CUNEF FC</title>
+    <meta name="description" content="CUNEF FC Squad — meet the players representing CUNEF University in football.">
+    <link rel="icon" href="logo-cunef-fc.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
     <!-- The body: everything visible on the page -->
     <header>
         <!-- The header: logo, title, and navigation menu -->
-        <img src="LogoCunefFC.png" alt="CUNEF FC Logo" width="100" height="100">
-        <!-- Logo of the page -->
-        <h1>SQUAD</h1>
-        <!-- Main title -->
-         <nav>
-            <!-- Navigation menu: links to other pages -->
+        <img src="logo-cunef-fc.png" alt="CUNEF FC Logo" width="100" height="100">
+        <h1>CUNEF FC</h1>
+        <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li><a href="Squad.html">Squad</a></li>
-                <li><a href="Season.html">Season</a></li>
-                <li><a href="News.html">News</a></li>
+                <li><a href="squad.html" aria-current="page">Squad</a></li>
+                <li><a href="season.html">Season</a></li>
+                <li><a href="news.html">News</a></li>
                 <li><a href="login.html">Login</a></li>
             </ul>
         </nav>
@@ -40,79 +38,57 @@
     </header>
 
 <main>
-    <!-- Main content of the page -->
-    <!-- Section: List of players -->
-    <p>Learn more about CUNEF FC's fierce warriors.</p>
     <section>
-        
-        <article>
-            <!-- An article: information about a specific player -->
-            <h2>Capi</h2>
-            <!-- Player name -->
+        <h2>Squad</h2>
+        <p>Learn more about CUNEF FC's fierce warriors.</p>
+        <div class="card-grid">
+            <article class="player-card">
+                <h3>Capi</h3>
                 <p>Bio: Capi is a talented forward known for his leadership as the team's captain and goal-scoring ability.</p>
-                <!-- Player biography -->
-            <ul>
-                <!-- List of player characteristics -->
-                <li>Position: <span>Forward</span></li>
-                <li>Number: 9</li>
-                <li>Age: 21</li>
-            </ul>
-        </article>
-        <article>
-            <!-- An article: information about a specific player -->
-            <h2>Gabo</h2>
-            <!-- Player name -->
+                <ul>
+                    <li>Position: <span>Forward</span></li>
+                    <li>Number: 9</li>
+                    <li>Age: 21</li>
+                </ul>
+            </article>
+            <article class="player-card">
+                <h3>Gabo</h3>
                 <p>Bio: Gabo is a relentless fullback known for his speed and vision on the field.</p>
-                <!-- Player biography -->
-            <ul>
-                <!-- List of player characteristics -->
-                <li>Position: <span>Fullback</span></li>
-                <li>Number: 22</li>
-                <li>Age: 19</li>
-            </ul>
-        </article>
-        <article>
-            <!-- An article: information about a specific player -->
-            <h2>Antony</h2>
-            <!-- Player name -->
+                <ul>
+                    <li>Position: <span>Fullback</span></li>
+                    <li>Number: 22</li>
+                    <li>Age: 19</li>
+                </ul>
+            </article>
+            <article class="player-card">
+                <h3>Antony</h3>
                 <p>Bio: Antony is a exceptional goalkeeper known for his shot-stopping ability and clutch performances.</p>
-                <!-- Player biography -->
-            <ul>
-                <!-- List of player characteristics -->
-                <li>Position: <span>Goalkeeper</span></li>
-                <li>Number: 1</li>
-                <li>Age: 18</li>
-            </ul>
-        </article>
+                <ul>
+                    <li>Position: <span>Goalkeeper</span></li>
+                    <li>Number: 1</li>
+                    <li>Age: 18</li>
+                </ul>
+            </article>
+        </div>
     </section>
 
     <section>
-        <!-- Section: Top player statistics -->
         <h2>Top Players Stats</h2>
-        <!-- Section title -->
         <p>Highlighting our best performers this season.</p>
-        <!-- Description -->
-        <article>
-            <!-- An article: Top Scorer -->
-            <h3>Top Scorer</h3>
-            <!-- Statistics category -->
-            <p><strong>Capi</strong> - 15 Goals</p>
-            <!-- Player and achievement -->
-        </article>
-        <article>
-            <!-- An article: Most Assists -->
-            <h3>Most Assists</h3>
-            <!-- Statistics category -->
-            <p><strong>Gabo</strong> - 8 Assists</p>
-            <!-- Player and achievement -->
-        </article>
-        <article>
-            <!-- An article: Best Goalkeeper -->
-            <h3>Best Goalkeeper</h3>
-            <!-- Statistics category -->
-            <p><strong>Antony</strong> - 5 Clean Sheets</p>
-            <!-- Player and achievement -->
-        </article>
+        <div class="card-grid">
+            <article>
+                <h3>Top Scorer</h3>
+                <p><strong>Capi</strong> - 15 Goals</p>
+            </article>
+            <article>
+                <h3>Most Assists</h3>
+                <p><strong>Gabo</strong> - 8 Assists</p>
+            </article>
+            <article>
+                <h3>Best Goalkeeper</h3>
+                <p><strong>Antony</strong> - 5 Clean Sheets</p>
+            </article>
+        </div>
     </section>
 
     <section>
