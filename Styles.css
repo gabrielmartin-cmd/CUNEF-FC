@@ -1,23 +1,26 @@
+/* Design system: CUNEF orange colors, consistent spacing, typography */
 :root {
-    --brand: #F64E00;
-    --brand-dark: #C43E00;
-    --surface: #f9cbb5;
-    --background: #f9f9f9;
-    --text: #333;
-    --text-light: #ffffff;
-    --shadow: 0 4px 8px rgba(246, 78, 0, 0.2);
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --radius: 0.5rem;
+    --brand: #F64E00;           /* Primary CUNEF orange */
+    --brand-dark: #C43E00;      /* Dark orange for hover/active states */
+    --surface: #f9cbb5;         /* Card background (light beige) */
+    --background: #f9f9f9;      /* General page background */
+    --text: #333;               /* Dark text in light mode */
+    --text-light: #ffffff;      /* Light text on dark backgrounds */
+    --shadow: 0 4px 8px rgba(246, 78, 0, 0.2);  /* Shadow with orange tint */
+    --space-sm: 0.5rem;         /* Small spacing (8px) */
+    --space-md: 1rem;           /* Medium spacing (16px) */
+    --space-lg: 1.5rem;         /* Large spacing (24px) */
+    --radius: 0.5rem;           /* Rounded corners (8px) */
 }
 
+/* Global reset */
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+    box-sizing: border-box;  /* Includes padding/border in width/height calculations */
 }
 
+/* Remove default margins and padding from elements */
 body,
 h1,
 h2,
@@ -28,16 +31,18 @@ ul {
     padding: 0;
 }
 
+/* Flexible structure: body takes full height */
 html, body {
     height: 100%;
 }
 
+/* Body is flex container for sticky header + main + footer */
 body {
-    display: flex;
-    flex-direction: column;
+    display: flex;                    /* Makes children arrange horizontally or vertically */
+    flex-direction: column;           /* Stacks children vertically (header, main, footer) */
     font-family: helvetica, sans-serif;
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.6;                /* Vertical spacing between lines for better readability */
     color: var(--text);
     background-color: var(--background);
 }
@@ -46,70 +51,85 @@ body {
 /* HEADER & NAVIGATION */
 /* ============================= */
 
+/* Sticky header with orange gradient */
 header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--space-lg);
-    background: linear-gradient(135deg, var(--brand) 0%, #FF7A00 50%, var(--brand) 100%);
+    display: flex;                    /* Arranges children in a row by default */
+    justify-content: flex-start;      /* Aligns items to the LEFT of the flex container */
+    align-items: center;              /* Centers items VERTICALLY in the flex container */
+    gap: var(--space-lg);             /* Adds 24px space between header items */
+    background: linear-gradient(135deg, var(--brand) 0%, #FF7A00 50%, var(--brand) 100%);  /* Diagonal orange gradient */
     padding: var(--space-md);
     border-radius: var(--radius);
     margin-bottom: var(--space-lg);
     color: #fff;
-    font-family: 'Bebas Neue', sans-serif;
-    box-shadow: 0 8px 32px rgba(246, 78, 0, 0.4);
-    position: sticky;
+    font-family: 'Bebas Neue', sans-serif;  /* Bold, impactful font for title */
+    box-shadow: 0 8px 32px rgba(246, 78, 0, 0.4);  /* Strong shadow for depth */
+    position: sticky;                 /* Stays at top when scrolling */
     top: 0;
-    z-index: 10;
+    z-index: 10;                      /* Above all content */
 }
 
 header h1 {
-    font-size: 3.5rem;
-    font-weight: 900;
+    font-size: 3.5rem;                /* Very large on desktop */
+    font-weight: 900;                 /* Maximum boldness */
     text-transform: uppercase;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);  /* Shadow for text readability */
 }
 
+/* Navigation pushed to the right with margin-left: auto */
+nav {
+    margin-left: auto;                /* Takes all remaining space, pushes nav right */
+}
+
+/* Horizontal nav links with flex, wraps on small screens */
 nav ul {
-    display: flex;
+    display: flex;                    /* Arranges list items in a row */
     list-style: none;
-    gap: var(--space-md);
-    flex-wrap: wrap;
+    gap: var(--space-md);             /* 16px space between nav items */
+    flex-wrap: wrap;                  /* Items wrap to next line if too narrow */
 }
 
+/* Base styles for navigation links */
 nav a {
     text-decoration: none;
     color: #fff;
     font-weight: bold;
     padding: var(--space-sm) var(--space-md);
     border-radius: var(--radius);
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s;  /* Smooth animation */
 }
 
+/* Semi-transparent background on hover/focus for visual feedback */
 nav a:hover,
 nav a:focus-visible {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.2);  /* Slightly darkens */
     outline: none;
 }
 
+/* Current page: darker + underlined (aria-current is better than class) */
 nav a[aria-current="page"] {
     background-color: rgba(0, 0, 0, 0.3);
     text-decoration: underline;
 }
 
+/* Responsive mobile: vertical header, more compact */
 @media (max-width: 700px) {
     header {
-        flex-direction: column;
-        gap: var(--space-sm);
+        flex-direction: column;       /* Stacks logo and nav vertically */
+        gap: var(--space-sm);         /* Less space on mobile */
         text-align: center;
     }
 
     header h1 {
-        font-size: 2rem;
+        font-size: 2rem;              /* Reduced from 3.5rem to fit mobile */
+    }
+
+    nav {
+        margin-left: 0;               /* Centers nav (removes desktop auto) */
     }
 
     nav ul {
-        justify-content: center;
+        justify-content: center;      /* Centers nav items in the container */
     }
 }
 
@@ -117,11 +137,12 @@ nav a[aria-current="page"] {
 /* MAIN CONTENT */
 /* ============================= */
 
+/* Main: primary container with max-width and flex to fill space */
 main {
     padding: var(--space-md);
-    flex: 1;
-    max-width: 1100px;
-    margin-inline: auto;
+    flex: 1;                          /* Takes all available space (grows to fill) */
+    max-width: 1100px;                /* Maximum width to prevent too-wide content */
+    margin-inline: auto;              /* Centers horizontally (left and right margins auto) */
     width: 100%;
 }
 
@@ -134,11 +155,15 @@ section h2 {
     margin-bottom: var(--space-lg);
 }
 
+/* Paragraphs: 65 characters per line is optimal for readability */
 p {
-    max-width: 65ch;
+    text-align: center;        /* Centers text for a clean look */
+    max-width: 65ch;                  /* ch = character unit, limits line length */
     margin-bottom: var(--space-md);
+    margin-inline: auto;               /* Centers the paragraph within its container on large screens */
 }
 
+/* Links: default orange color */
 a {
     color: var(--brand);
 }
@@ -152,21 +177,24 @@ a:focus-visible {
 /* CARDS & ARTICLES */
 /* ============================= */
 
+/* Cards with beige background and soft shadow */
 article {
     padding: var(--space-lg);
     border-radius: var(--radius);
     margin-bottom: var(--space-md);
     box-shadow: var(--shadow);
-    background-color: var(--surface);
+    background-color: var(--surface);  /* Light beige CUNEF */
 }
 
+/* Responsive grid: minimum 260px per card, expands automatically */
 .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--space-lg);
+    display: grid;                                             /* Creates 2D grid layout */
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));  /* 2-3 columns on desktop, 1 on mobile - auto-fit creates columns as they fit */
+    gap: var(--space-lg);                                     /* 24px space between cards */
     background-color: var(--background);
 }
 
+/* Remove bottom margin from articles in first section */
 main > section:nth-of-type(1) article {
     margin-bottom: 0;
 }
@@ -175,35 +203,39 @@ main > section:nth-of-type(1) article {
 /* ASIDE */
 /* ============================= */
 
+/* Sidebar: clean white with shadow */
 aside {
-    background-color: #fff;
+    background-color: #fff;           /* Contrasts with beige surface */
     padding: var(--space-lg);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     margin-bottom: var(--space-lg);
+    color:#333;                   /* Very dark text for strong contrast on white background */
 }
 
 aside h3 {
     margin-bottom: var(--space-md);
 }
 
+/* Sidebar list without bullets, vertical with spacing */
 aside ul {
     list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
+    display: flex;                    /* Arranges list items */
+    flex-direction: column;           /* Stacks items vertically */
+    gap: var(--space-sm);             /* 8px space between items */
 }
 
 /* ============================= */
 /* FORMS */
 /* ============================= */
 
+/* Form: vertical centered container with max-width */
 form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    max-width: 420px;
-    margin: var(--space-lg) auto;
+    display: flex;                    /* Arranges form elements vertically */
+    flex-direction: column;           /* Stacks all children vertically */
+    gap: var(--space-md);             /* 16px space between form elements */
+    max-width: 420px;                 /* Narrow width for readability */
+    margin: var(--space-lg) auto;     /* Centers the form */
     padding: var(--space-lg);
     background-color: #fff;
     border-radius: var(--radius);
@@ -211,29 +243,33 @@ form {
 }
 
 label {
+    color:#15171a;
     font-weight: bold;
-    display: block;
+    display: block;                   /* Takes full width */
     margin-bottom: var(--space-sm);
 }
 
+/* Inputs: 100% width, subtle borders */
 input,
 select,
 textarea {
     padding: 0.6rem;
     border: 1px solid #ccc;
     border-radius: var(--radius);
-    font: inherit;
+    font: inherit;                    /* Inherits typography from body */
     width: 100%;
 }
 
+/* Focus: orange border + shadow for clear visual feedback */
 input:focus,
 select:focus,
 textarea:focus {
     outline: none;
     border: 2px solid var(--brand);
-    box-shadow: 0 0 5px rgba(246, 78, 0, 0.5);
+    box-shadow: 0 0 5px rgba(246, 78, 0, 0.5);  /* Orange glow */
 }
 
+/* Buttons: vibrant orange with hover effect */
 button {
     background-color: var(--brand);
     color: #fff;
@@ -242,35 +278,70 @@ button {
     border-radius: var(--radius);
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.3s, transform 0.2s;
+    transition: background-color 0.3s, transform 0.2s;  /* Smooth animations */
 }
 
+/* Hover: darker and raised (3D effect) */
 button:hover,
 button:focus-visible {
-    background-color: var(--brand-dark);
-    transform: translateY(-2px);
+    background-color: var(--brand-dark);  /* Dark orange */
+    transform: translateY(-2px);          /* Lift effect */
     outline: none;
+}
+
+table {
+    border-collapse: collapse; width: 100%;
+}
+caption {
+    text-align: left;
+    font-weight: bold;
+    margin-bottom: var(--space-sm);
+}
+th, td
+{
+    padding: var(--space-sm);
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+thead th {
+    background: var(--brand);
+    color: #fff;
+}
+tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.03);
+} /* zebra stripes, no classes needed
+*/
+.is-cunef {
+    font-weight: bold;
+    background: rgba(246, 78, 0, 0.12);
+}
+/* tables don't shrink - let the table scroll instead of breaking the page */
+.table-wrap {
+    overflow-x: auto;
 }
 
 /* ============================= */
 /* FOOTER */
 /* ============================= */
 
+/* Footer: mirror of header (orange gradient) */
 footer {
     text-align: start;
     border-top: 1px solid #ccc;
     padding: var(--space-md);
-    background: linear-gradient(135deg, var(--brand) 0%, #FF7A00 50%, var(--brand) 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, #FF7A00 50%, var(--brand) 100%);  /* Diagonal orange gradient */
     color: #ffffff;
     border-radius: var(--radius);
     margin-top: var(--space-lg);
 }
 
+/* Footer links: white and underlined */
 footer a {
     color: #fff;
     text-decoration: underline;
 }
 
+/* Hover inverts behavior: removes underline (visual contrast) */
 footer a:hover,
 footer a:focus-visible {
     text-decoration: none;
@@ -280,45 +351,44 @@ footer a:focus-visible {
 /* RESPONSIVE */
 /* ============================= */
 
+/* Responsive mobile: less padding, single column grid */
 @media (max-width: 700px) {
     main {
-        padding: var(--space-sm);
+        padding: var(--space-sm);    /* Reduces padding on small screens */
     }
 
     .card-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr;  /* Single column on mobile */
     }
 }
 
+/* Images: responsive (don't exceed container) */
 img {
-    max-width: 100%;
-    height: auto;
-    display: block;
+    max-width: 100%;                 /* Respects parent container width */
+    height: auto;                    /* Maintains aspect ratio */
+    display: block;                  /* Removes whitespace below image */
 }
 
-/* ============================= */
-/* ACCESSIBILITY */
-/* ============================= */
-
+/* Skip link: accessibility - allows jumping to main content */
 .skip-link {
     position: absolute;
-    left: -9999px;
+    left: -9999px;                   /* Hidden off-screen */
 }
 
 .skip-link:focus {
-    left: var(--space-sm);
+    left: var(--space-sm);           /* Appears on focus */
     top: var(--space-sm);
     background: #fff;
     padding: var(--space-sm);
     z-index: 100;
 }
 
-/* Dark mode support */
+/* Dark mode: adapts colors based on system preference */
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #15171a;
-        --surface: #1f2125;
-        --text: #e8e8e8;
+        --background: #15171a;       /* Dark gray */
+        --surface: #1f2125;          /* Slightly lighter gray for contrast */
+        --text: #e8e8e8;             /* Light gray for readability */
     }
 
     body {
