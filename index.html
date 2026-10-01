@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Made by Gabriel Martín Jiménez & Antonio García Vicente -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUNEF FC — Official Website</title>
+    <meta name="description" content="Official CUNEF FC website — squad, fixtures, results, and news from the CUNEF University football club.">
+    <link rel="icon" href="LogoCunefFC.PNG" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="Styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <!-- Site header: brand + main navigation -->
+    <header class="site-header">
+        <div class="container site-header__inner">
+            <a class="brand" href="index.html">
+                <img class="brand__logo" src="LogoCunefFC.PNG" alt="" width="56" height="56">
+                <span class="brand__name">CUNEF FC</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <ul class="site-nav__list">
+                    <li><a class="site-nav__link" href="index.html" aria-current="page">Home</a></li>
+                    <li><a class="site-nav__link" href="squad.html">Squad</a></li>
+                    <li><a class="site-nav__link" href="Season.html">Season</a></li>
+                    <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <!-- Hero -->
+        <section class="page-hero page-hero--home" aria-labelledby="page-title">
+            <div class="container page-hero__inner">
+                <img class="page-hero__crest" src="LogoCunefFC.PNG" alt="" width="320" height="320">
+                <div class="page-hero__content">
+                    <p class="eyebrow">Official website</p>
+                    <h1 id="page-title">CUNEF FC</h1>
+                    <p class="page-hero__lead">The football club of <a href="https://www.cunef.edu">CUNEF University</a>. Fixtures, results, squad and the latest from the club, all in one place.</p>
+                    <div class="page-hero__actions">
+                        <a class="btn" href="Season.html">Fixtures &amp; results</a>
+                        <a class="btn btn--ghost" href="squad.html">Meet the squad</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About + club information -->
+        <section class="section" aria-labelledby="about-title">
+            <div class="container split">
+                <div class="prose">
+                    <p class="eyebrow">About the club</p>
+                    <h2 id="about-title">More than a team</h2>
+                    <p class="lead">CUNEF FC represents CUNEF University on the pitch. We are dedicated to promoting sportsmanship, teamwork and excellence — both on and off the field.</p>
+                    <ul class="values" aria-label="Club values">
+                        <li>Sportsmanship</li>
+                        <li>Teamwork</li>
+                        <li>Excellence</li>
+                    </ul>
+                </div>
+
+                <aside class="info-panel" aria-labelledby="info-title">
+                    <h2 id="info-title">Club information</h2>
+                    <dl class="info-list">
+                        <div class="info-list__item">
+                            <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                            <div>
+                                <dt>Stadium</dt>
+                                <dd><a href="https://maps.app.goo.gl/pkxxNpoLSM8ebfMF9?g_st=iw">Campos de Fútbol Ganapanes</a></dd>
+                            </div>
+                        </div>
+                        <div class="info-list__item">
+                            <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+                            <div>
+                                <dt>Founded</dt>
+                                <dd><time datetime="2025">2025</time></dd>
+                            </div>
+                        </div>
+                        <div class="info-list__item">
+                            <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                            <div>
+                                <dt>Email</dt>
+                                <dd><a href="mailto:deportes@cunef.edu">deportes@cunef.edu</a></dd>
+                            </div>
+                        </div>
+                    </dl>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Contact call to action -->
+        <section class="section" aria-labelledby="contact-title">
+            <div class="container">
+                <div class="cta">
+                    <h2 id="contact-title">Contact us</h2>
+                    <p>Questions, ideas or feedback? Drop us an email — we value your support.</p>
+                    <a class="btn btn--light" href="mailto:deportes@cunef.edu">Email deportes@cunef.edu</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Site footer -->
+    <footer class="site-footer">
+        <div class="container site-footer__inner">
+            <p class="site-footer__brand">
+                <img src="LogoCunefFC.PNG" alt="" width="40" height="40">
+                <span class="site-footer__name">CUNEF FC</span>
+            </p>
+            <nav aria-label="Footer">
+                <ul class="site-footer__links">
+                    <li><a href="https://www.cunef.edu/politica-de-privacidad/">Privacy Policy</a></li>
+                    <li><a href="index.html">Home</a></li>
+                </ul>
+            </nav>
+            <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
