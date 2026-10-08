@@ -1,0 +1,25 @@
+{
+  "name": "repo_cunef_fc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --watch src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrielmartin-cmd/CUNEF-FC.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gabrielmartin-cmd/CUNEF-FC/issues"
+  },
+  "homepage": "https://github.com/gabrielmartin-cmd/CUNEF-FC#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
