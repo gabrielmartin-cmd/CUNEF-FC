@@ -2,7 +2,6 @@
   "//": [
     "JSON no admite comentarios: esta clave \"//\" es la convención de npm para documentar el archivo y npm la ignora.",
     "name / version: identifican el paquete; los generó npm init -y.",
-    "main: punto de entrada por defecto del paquete (no lo usamos; arrancamos con scripts.start).",
     "scripts.start: \"npm start\" ejecuta src/server.js con node --watch, que reinicia el servidor cada vez que guardamos un archivo.",
     "scripts.test: placeholder de npm init; aún no hay tests.",
     "repository / bugs / homepage: enlaces al repositorio de GitHub del proyecto.",
@@ -12,7 +11,6 @@
   "name": "repo_cunef_fc",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --watch src/server.js"
