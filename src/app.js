@@ -7,6 +7,10 @@ const express = require("express");
 const logger = require("./middleware/logger");
 // Router con todas las rutas de /tasks (GET y POST).
 const tasksRouter = require("./routes/tasks");
+// Routers de jugadores, partidos y equipos (GET y POST).
+const playersRouter = require("./routes/players");
+const matchesRouter = require("./routes/matches");
+const teamsRouter = require("./routes/teams");
 
 // Crea la instancia de la aplicación Express.
 const app = express();
@@ -25,7 +29,7 @@ app.use(logger);
 app.get("/", (req, res) => {
   res.json({
     message: "CUNEF FC API",
-    endpoints: ["/health", "/echo/:msg", "/tasks", "/boom"],
+    endpoints: ["/health", "/echo/:msg", "/tasks", "/players", "/matches", "/teams", "/boom"],
   });
 });
 
@@ -40,9 +44,15 @@ app.get("/echo/:msg", (req, res) => {
   res.json({ echo: req.params.msg });
 });
 
-// Monta el router de tareas bajo el prefijo /tasks: el "/" del router
-// pasa a ser "/tasks" en la app.
+// Monta el router de las entidades bajo el prefijo /entidad: el "/" del router
+// pasa a ser "/entidad" en la app.
 app.use("/tasks", tasksRouter);
+
+app.use("/players", playersRouter);
+
+app.use("/matches", matchesRouter);
+
+app.use("/teams", teamsRouter);
 
 // Ruta que falla a propósito para demostrar que el gestor de errores funciona.
 // Express captura la excepción y la pasa al middleware de errores.
