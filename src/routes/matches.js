@@ -1,17 +1,23 @@
-// routes/matches.js — router "fino": solo conecta rutas con funciones del
-// controlador. No contiene lógica ni toca los datos directamente.
+// routes/matches.js — router "fino": solo conecta rutas con funciones del controlador.
+// Aquí también se declara quién puede llamar a cada ruta (middleware de autenticación/rol).
 
-const express = require("express");
-// Importa los handlers desde el controlador.
-const { listMatches, createMatch } = require("../controllers/matchesController");
+const router = require('express').Router();
+const { optionalAuth, requireRole } = require('../middleware/auth');
+const { listMatches, getCallup, saveCallup, updateMatch } = require('../controllers/matchesController');
 
-// Crea un mini-router independiente que luego se monta en app.js bajo /matches.
-const router = express.Router();
+// GET /api/matches?status=upcoming|played&teamId=&sort=&page=&limit=   (público)
+// teamId es un extra útil: "solo los partidos de mi club" (Home/Season).
+router.get('/', listMatches);
 
-// GET /matches -> devuelve la lista.
-router.get("/", listMatches);
-// POST /matches -> crea (de momento, devuelve) el elemento enviado en el body.
-router.post("/", createMatch);
+// GET /api/matches/:id/callup
+// Visitantes/fans/players: 404 hasta que se publique. Admin: siempre.
+router.get('/:id/callup', optionalAuth, getCallup);
 
-// Se exporta para montarlo con app.use("/matches", matchesRouter).
+// PUT /api/matches/:id/callup   body: { players: [{ playerId, role }] }   (Admin)
+// Sustituye la lista ENTERA (por eso PUT y no PATCH).
+router.put('/:id/callup', requireRole('admin'), saveCallup);
+
+// PATCH /api/matches/:id   body: { callupPublished: true|false }   (Admin)
+router.patch('/:id', requireRole('admin'), updateMatch);
+
 module.exports = router;

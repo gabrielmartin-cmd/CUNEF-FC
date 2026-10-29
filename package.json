@@ -6,13 +6,15 @@
     "scripts.test: placeholder de npm init; aún no hay tests.",
     "repository / bugs / homepage: enlaces al repositorio de GitHub del proyecto.",
     "type: \"commonjs\" indica que usamos require/module.exports (no import/export).",
-    "dependencies: paquetes necesarios para ejecutar la app; express lo añadió npm install express. El ^ permite actualizaciones menores (5.x)."
+    "dependencies: paquetes necesarios para ejecutar la app; express lo añadió npm install express. El ^ permite actualizaciones menores (5.x).",
+    "scripts.test: \"npm test\" ejecuta scripts/smoke-test.js, que lanza peticiones reales a la API con los datos de ejemplo de src/data.js.",
+    "dependencies (nuevas): bcryptjs (hash de contraseñas) y jsonwebtoken (tokens JWT de sesión)."
   ],
   "name": "repo_cunef_fc",
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/smoke-test.js",
     "start": "node --watch src/server.js"
   },
   "repository": {
@@ -28,6 +30,8 @@
   },
   "homepage": "https://github.com/gabrielmartin-cmd/CUNEF-FC#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "bcryptjs": "^2.4.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2"
   }
 }

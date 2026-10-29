@@ -1,21 +1,15 @@
-// teamsController.js — lógica de los handlers de /teams y los datos de ejemplo.
+// teamsController.js — lógica de los handlers de Datos del club (equipo).
+// Las rutas (routes/teams.js) solo conectan URL + middleware con estas funciones.
 
-// Datos de ejemplo fijos en memoria (todavía no hay base de datos).
-const teams = [
-  { id: 1, name: "CUNEF FC" },
-  { id: 2, name: "Rival FC" },
-];
+const Teams = require('../models/teams');
+const { toId, notFound } = require('../utils');
 
-// GET /teams: responde con el array completo en formato JSON (código 200 por defecto).
-function listTeams(req, res) {
-  res.json(teams);
+// GET /api/teams/:id  -> datos del club (Home)
+function getTeam(req, res) {
+    const id = toId(req.params.id);
+    const t = id && Teams.findById(id);
+    if (!t) throw notFound('Team not found');
+    res.json({ id: t.team_id, name: t.name, stadium: t.stadium, creationDate: t.creation_date });
 }
 
-// POST /teams: devuelve el body recibido con código 201 (Created).
-// req.body solo tiene contenido porque express.json() lo ha parseado antes.
-function createTeam(req, res) {
-  res.status(201).json(req.body);
-}
-
-// Se exportan ambos handlers para usarlos en routes/teams.js.
-module.exports = { listTeams, createTeam };
+module.exports = { getTeam };

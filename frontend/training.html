@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Made by Gabriel Martín Jiménez & Antonio García Vicente -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training — CUNEF FC</title>
+    <meta name="description" content="CUNEF FC training sessions — calendar, notes and attendance.">
+    <link rel="icon" href="LogoCunefFC.PNG" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="Styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <!-- Site header: brand + main navigation -->
+    <header class="site-header">
+        <div class="container site-header__inner">
+            <a class="brand" href="index.html">
+                <img class="brand__logo" src="LogoCunefFC.PNG" alt="" width="56" height="56">
+                <span class="brand__name">CUNEF FC</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <ul class="site-nav__list">
+                    <li><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li><a class="site-nav__link" href="squad.html">Squad</a></li>
+                    <li><a class="site-nav__link" href="Season.html">Season</a></li>
+                    <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="training.html" aria-current="page">Training</a></li>
+                    <li><a class="site-nav__link" href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <!-- Page hero -->
+        <section class="page-hero" aria-labelledby="page-title">
+            <div class="container page-hero__inner">
+                <p class="eyebrow">Squad schedule</p>
+                <h1 id="page-title">Training</h1>
+                <p class="page-hero__lead">Training calendar, session notes and attendance for the CUNEF FC squad.</p>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="calendar-title">
+            <div class="container">
+                <header class="section__header">
+                    <p class="eyebrow">Calendar</p>
+                    <h2 id="calendar-title">Training sessions</h2>
+                </header>
+
+                <p id="training-notice" class="notice" hidden></p>
+
+                <div class="toolbar">
+                    <div class="toolbar__group">
+                        <button type="button" id="prev-month" class="btn--outline btn--small" aria-label="Previous month">&lsaquo;</button>
+                        <h3 id="month-label" aria-live="polite"></h3>
+                        <button type="button" id="next-month" class="btn--outline btn--small" aria-label="Next month">&rsaquo;</button>
+                    </div>
+                    <div class="toolbar__group">
+                        <label for="type-filter">Type</label>
+                        <select id="type-filter">
+                            <option value="">All</option>
+                            <option value="tactical">Tactical</option>
+                            <option value="physical">Physical</option>
+                            <option value="recovery">Recovery</option>
+                        </select>
+                        <button type="button" id="new-session" data-roles="admin" hidden>New session</button>
+                    </div>
+                </div>
+
+                <p id="training-status" class="status" role="status">Loading sessions…</p>
+                <div class="split split--even">
+                    <div id="session-list" class="agenda"></div>
+                    <aside id="session-detail" class="info-panel" aria-label="Session details" aria-live="polite">
+                        <p class="status">Select a session to see its notes and attendance.</p>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin: create / edit session (POST / PATCH /api/training-sessions) -->
+    <dialog id="session-dialog" class="dialog" aria-labelledby="session-title">
+        <form id="session-form" class="dialog__body" novalidate>
+            <h2 id="session-title" class="dialog__title">New session</h2>
+            <div class="field-row">
+                <div class="field">
+                    <label for="s-date">Date</label>
+                    <input type="date" id="s-date" name="date" required>
+                </div>
+                <div class="field">
+                    <label for="s-time">Start time</label>
+                    <input type="time" id="s-time" name="startTime" required>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="s-location">Location</label>
+                    <input type="text" id="s-location" name="location" maxlength="100" required>
+                </div>
+                <div class="field">
+                    <label for="s-type">Type</label>
+                    <select id="s-type" name="type" required>
+                        <option value="tactical">Tactical</option>
+                        <option value="physical">Physical</option>
+                        <option value="recovery">Recovery</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="s-notes">Notes</label>
+                <textarea id="s-notes" name="notes" maxlength="500"></textarea>
+            </div>
+            <div class="field field--check">
+                <input type="checkbox" id="s-public" name="isPublic">
+                <label for="s-public">Public session (visible to visitors and fans)</label>
+            </div>
+            <p id="session-error" class="form__error" role="alert" hidden></p>
+            <div class="dialog__actions">
+                <button type="button" id="session-cancel" class="btn--outline">Cancel</button>
+                <button type="submit">Save session</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="confirm-dialog" class="dialog dialog--narrow" aria-labelledby="confirm-title">
+        <div class="dialog__body">
+            <h2 id="confirm-title" class="dialog__title">Delete session?</h2>
+            <p>The session and the attendance of every player will be deleted. This cannot be undone.</p>
+            <div class="dialog__actions">
+                <button type="button" id="confirm-cancel" class="btn--outline">Keep it</button>
+                <button type="button" id="confirm-ok" class="btn--danger">Delete</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Site footer -->
+    <footer class="site-footer">
+        <div class="container site-footer__inner">
+            <p class="site-footer__brand">
+                <img src="LogoCunefFC.PNG" alt="" width="40" height="40">
+                <span class="site-footer__name">CUNEF FC</span>
+            </p>
+            <nav aria-label="Footer">
+                <ul class="site-footer__links">
+                    <li><a href="https://www.cunef.edu/politica-de-privacidad/">Privacy Policy</a></li>
+                    <li><a href="index.html">Home</a></li>
+                </ul>
+            </nav>
+            <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/training.js" defer></script>
+</body>
+
+</html>

@@ -959,6 +959,455 @@ textarea:focus-visible {
     border-top: 1px solid var(--color-dark-border);
 }
 
+/* ==== 5b. Componentes conectados a la API ==== */
+/* (estado de carga/errores, formularios extra, diálogos, tablas simples, agenda de entrenos) */
+
+[hidden] {
+    display: none !important;   /* que display:grid/flex no anule el atributo hidden */
+}
+
+:root {
+    --color-danger: hsl(0 68% 40%);
+    --color-danger-tint: hsl(0 80% 96%);
+    --color-success: hsl(145 60% 26%);
+    --color-success-tint: hsl(145 55% 93%);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-danger: hsl(0 85% 72%);
+        --color-danger-tint: hsl(0 40% 17%);
+        --color-success: hsl(145 55% 68%);
+        --color-success-tint: hsl(145 30% 16%);
+    }
+}
+
+/* Mensajes de estado: "Loading…", errores de red, listas vacías */
+.status {
+    padding: var(--space-4) 0;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.status--error,
+.form__error {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.form__error {
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-danger-tint);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+}
+
+.form__success {
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-success-tint);
+    color: var(--color-success);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+}
+
+.notice {
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-6);
+    background-color: var(--color-primary-tint);
+    color: var(--color-on-tint);
+    border: 1px solid var(--color-primary-soft);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    max-width: none;
+}
+
+/* Botones secundarios */
+.btn--outline {
+    background-color: transparent;
+    border-color: var(--color-primary-strong);
+    color: var(--color-link);
+}
+
+.btn--outline:hover {
+    background-color: var(--color-primary-tint);
+    color: var(--color-link-hover);
+    border-color: var(--color-primary-stronger);
+}
+
+.btn--danger {
+    background-color: var(--color-danger);
+    color: #fff;
+}
+
+.btn--danger:hover {
+    background-color: var(--color-danger);
+    color: #fff;
+    filter: brightness(0.9);
+}
+
+.btn--small {
+    min-height: 2.25rem;
+    padding: var(--space-1) var(--space-4);
+    font-size: var(--fs-sm);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Badges de estado */
+.badge--loss {
+    background-color: var(--color-danger-tint);
+    color: var(--color-danger);
+}
+
+.badge--injured {
+    background-color: var(--color-danger-tint);
+    color: var(--color-danger);
+}
+
+.badge--ok {
+    background-color: var(--color-success-tint);
+    color: var(--color-success);
+}
+
+.badge--muted {
+    background-color: var(--color-surface-alt);
+    color: var(--color-text-muted);
+}
+
+/* Barra de herramientas: filtros, navegación de mes… */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.toolbar__group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.toolbar select {
+    width: auto;
+    min-width: 9rem;
+}
+
+.toolbar h3 {
+    min-width: 10rem;
+    text-align: center;
+}
+
+/* Paginación */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    font-weight: 600;
+}
+
+/* Campos de formulario extra */
+.form--wide {
+    max-width: 40rem;
+}
+
+.field--check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.field--check input {
+    width: 1.25rem;
+    min-height: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--color-primary-strong);
+}
+
+.field-row {
+    display: grid;
+    gap: var(--space-4);
+}
+
+textarea {
+    min-height: 6rem;
+    resize: vertical;
+}
+
+.form__switch {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+    max-width: none;
+}
+
+.link-button {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-link);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.link-button:hover {
+    background: none;
+    color: var(--color-link-hover);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Diálogos nativos (<dialog>) */
+.dialog {
+    width: min(100% - 2rem, 44rem);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: auto;
+}
+
+.dialog::backdrop {
+    background: hsl(var(--h-neutral) 20% 5% / 0.6);
+}
+
+.dialog__body {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-6);
+}
+
+.dialog__title {
+    font-size: 2rem;
+}
+
+.dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: flex-end;
+}
+
+.dialog--narrow {
+    width: min(100% - 2rem, 26rem);
+}
+
+/* Tabla simple (convocatoria, asistencia) */
+.simple-table {
+    min-width: 28rem;
+    font-size: var(--fs-sm);
+}
+
+.simple-table th,
+.simple-table td {
+    padding: var(--space-2) var(--space-3);
+    text-align: left;
+    border-top: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.simple-table thead th {
+    border-top: 0;
+    background-color: var(--color-dark);
+    color: var(--color-on-dark);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.simple-table select,
+.simple-table input {
+    width: auto;
+    min-width: 7.5rem;
+    min-height: 2.25rem;
+    padding: var(--space-1) var(--space-2);
+}
+
+.simple-table .is-injured td:first-child {
+    color: var(--color-danger);
+}
+
+.callup-counter {
+    font-weight: 700;
+    color: var(--color-on-tint);
+    background-color: var(--color-primary-tint);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    max-width: none;
+}
+
+.callup-counter.is-ready {
+    color: var(--color-success);
+    background-color: var(--color-success-tint);
+}
+
+/* Convocatoria dentro de una tarjeta de partido */
+.callup {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-3);
+    font-size: var(--fs-sm);
+}
+
+.callup summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--color-link);
+}
+
+.callup h4 {
+    margin-top: var(--space-3);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.callup ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+    margin-top: var(--space-1);
+}
+
+.callup li {
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface-alt);
+}
+
+.callup li.is-injured {
+    color: var(--color-danger);
+}
+
+.card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+/* Agenda de entrenamientos */
+.agenda {
+    display: grid;
+    gap: var(--space-6);
+    align-content: start;
+}
+
+.agenda__date {
+    margin-bottom: var(--space-2);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.agenda__day ul {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.session-item,
+.session-item:hover,
+.session-item:active {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-4);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    justify-content: stretch;
+    align-items: center;
+    text-align: left;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transform: none;
+}
+
+.session-item:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-tint);
+}
+
+.session-item[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    box-shadow: inset 4px 0 0 var(--color-primary), var(--shadow-sm);
+}
+
+.session-item__time {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--color-primary-strong);
+}
+
+.session-item__main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 600;
+}
+
+.session-item__where {
+    grid-column: 2;
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    color: var(--color-text-muted);
+}
+
+.session-detail {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.session-detail h2 {
+    font-size: 1.75rem;
+    margin-bottom: 0;
+}
+
+.session-detail h3 {
+    font-size: var(--fs-base);
+}
+
+.attendance-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* Ajustes responsive de los componentes de la API */
+@media (min-width: 56rem) {
+    .split--even {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 40rem) {
+    .field-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 /* ==== 6. Utilidades ==== */
 .visually-hidden {
     position: absolute !important;

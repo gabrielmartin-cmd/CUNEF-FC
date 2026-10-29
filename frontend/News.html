@@ -31,6 +31,7 @@
                     <li><a class="site-nav__link" href="squad.html">Squad</a></li>
                     <li><a class="site-nav__link" href="Season.html">Season</a></li>
                     <li><a class="site-nav__link" href="News.html" aria-current="page">News</a></li>
+                    <li><a class="site-nav__link" href="training.html">Training</a></li>
                     <li><a class="site-nav__link" href="login.html">Login</a></li>
                 </ul>
             </nav>
@@ -43,61 +44,46 @@
             <div class="container page-hero__inner">
                 <p class="eyebrow">Club news</p>
                 <h1 id="page-title">Latest news</h1>
-                <p class="page-hero__lead">Match updates, injuries and transfer talk — plus what our players are up to beyond football.</p>
+                <p class="page-hero__lead">Match updates, injuries and the stories behind the club — written by our players.</p>
             </div>
         </section>
 
-        <!-- On the pitch -->
-        <section class="section" aria-labelledby="pitch-title">
+        <!-- Post news: only visible to players (POST /api/news) -->
+        <section class="section" aria-labelledby="post-title" data-roles="player" hidden>
             <div class="container">
                 <header class="section__header">
-                    <p class="eyebrow">Inside the field</p>
-                    <h2 id="pitch-title">On the pitch</h2>
+                    <p class="eyebrow">Players only</p>
+                    <h2 id="post-title">Post news</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="card">
-                        <h3>Capi injury update</h3>
-                        <p class="card__meta"><time datetime="2025-09-15">September 15, 2025</time></p>
-                        <p class="card__text">Our captain Capi suffered a minor muscle strain during the match against ESIC. Medical staff report he should be back to full training by next week.</p>
-                    </article>
-                    <article class="card">
-                        <h3>Transfer rumours: Gabo on the radar</h3>
-                        <p class="card__meta"><time datetime="2025-09-12">September 12, 2025</time></p>
-                        <p class="card__text">Several sources suggest fullback Gabo is being monitored by top-tier university teams. No official offers have been made yet, but CUNEF FC is preparing to discuss a contract extension.</p>
-                    </article>
-                    <article class="card">
-                        <h3>Outstanding performance vs Universidad Francisco Victoria</h3>
-                        <p class="card__meta"><time datetime="2025-09-08">September 8, 2025</time></p>
-                        <p class="card__text">Antony delivered a goalkeeping masterclass with 8 crucial saves in our recent draw. Despite the result, the squad showed impressive defensive coordination.</p>
-                    </article>
-                </div>
+                <form id="news-form" class="form form--wide">
+                    <div class="field">
+                        <label for="news-title">Title</label>
+                        <input type="text" id="news-title" name="title" maxlength="120" required>
+                    </div>
+                    <div class="field">
+                        <label for="news-info">Information</label>
+                        <textarea id="news-info" name="information" maxlength="2000" required></textarea>
+                    </div>
+                    <p id="news-form-msg" role="status" hidden></p>
+                    <button type="submit">Publish</button>
+                </form>
             </div>
         </section>
 
-        <!-- Off the pitch -->
-        <section class="section" aria-labelledby="off-title">
+        <!-- News list (GET /api/news?page=&limit=) -->
+        <section class="section" aria-labelledby="news-title-h">
             <div class="container">
                 <header class="section__header">
-                    <p class="eyebrow">Outside the field</p>
-                    <h2 id="off-title">Off the pitch</h2>
+                    <p class="eyebrow">Newest first</p>
+                    <h2 id="news-title-h">Club news</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="card">
-                        <h3>Capi graduates with honours</h3>
-                        <p class="card__meta"><time datetime="2025-09-14">September 14, 2025</time></p>
-                        <p class="card__text">Team captain Capi completed his Business degree with distinction. His professors praised his dedication to both academics and athletics.</p>
-                    </article>
-                    <article class="card">
-                        <h3>Team party after the victory</h3>
-                        <p class="card__meta"><time datetime="2025-09-13">September 13, 2025</time></p>
-                        <p class="card__text">The squad celebrated their 3-1 victory against ESIC with a memorable team gathering at Gabana's Music Club in Madrid. Photos show the players in high spirits.</p>
-                    </article>
-                    <article class="card">
-                        <h3>Gabo's surprise DJ set at university event</h3>
-                        <p class="card__meta"><time datetime="2025-09-10">September 10, 2025</time></p>
-                        <p class="card__text">Fullback Gabo surprised everyone by spinning tracks at the CUNEF University cultural event last weekend. The crowd loved his mix of classic and modern hits!</p>
-                    </article>
-                </div>
+                <p id="news-status" class="status" role="status">Loading news…</p>
+                <div class="card-grid" id="news-list"></div>
+                <nav class="pager" aria-label="News pages">
+                    <button type="button" id="news-prev" class="btn--outline btn--small" disabled>Previous</button>
+                    <span id="news-page" aria-live="polite"></span>
+                    <button type="button" id="news-next" class="btn--outline btn--small" disabled>Next</button>
+                </nav>
             </div>
         </section>
 
@@ -129,6 +115,9 @@
             <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/news.js" defer></script>
 </body>
 
 </html>

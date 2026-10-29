@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Made by Gabriel Martín Jiménez & Antonio García Vicente -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — CUNEF FC</title>
+    <meta name="description" content="CUNEF FC Login — sign in to access member resources.">
+    <link rel="icon" href="LogoCunefFC.PNG" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="Styles.css">
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <!-- Site header: brand + main navigation -->
+    <header class="site-header">
+        <div class="container site-header__inner">
+            <a class="brand" href="index.html">
+                <img class="brand__logo" src="LogoCunefFC.PNG" alt="" width="56" height="56">
+                <span class="brand__name">CUNEF FC</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <ul class="site-nav__list">
+                    <li><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li><a class="site-nav__link" href="squad.html">Squad</a></li>
+                    <li><a class="site-nav__link" href="Season.html">Season</a></li>
+                    <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="login.html" aria-current="page">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <!-- Sign-in form (front-end only, not submitted anywhere yet) -->
+        <section class="auth container" aria-labelledby="page-title">
+            <form class="form">
+                <div class="form__intro">
+                    <img src="LogoCunefFC.PNG" alt="" width="64" height="64">
+                    <h1 id="page-title" class="text-center">Sign in</h1>
+                    <p>Access your CUNEF FC member resources.</p>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        minlength="8"
+                        autocomplete="current-password"
+                        aria-describedby="password-hint"
+                        required
+                    >
+                    <p class="field__hint" id="password-hint">At least 8 characters.</p>
+                </div>
+
+                <button class="btn--block" type="submit">Sign in</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Site footer -->
+    <footer class="site-footer">
+        <div class="container site-footer__inner">
+            <p class="site-footer__brand">
+                <img src="LogoCunefFC.PNG" alt="" width="40" height="40">
+                <span class="site-footer__name">CUNEF FC</span>
+            </p>
+            <nav aria-label="Footer">
+                <ul class="site-footer__links">
+                    <li><a href="https://www.cunef.edu/politica-de-privacidad/">Privacy Policy</a></li>
+                    <li><a href="index.html">Home</a></li>
+                </ul>
+            </nav>
+            <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

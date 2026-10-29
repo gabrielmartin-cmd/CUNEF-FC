@@ -31,6 +31,7 @@
                     <li><a class="site-nav__link" href="squad.html" aria-current="page">Squad</a></li>
                     <li><a class="site-nav__link" href="Season.html">Season</a></li>
                     <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="training.html">Training</a></li>
                     <li><a class="site-nav__link" href="login.html">Login</a></li>
                 </ul>
             </nav>
@@ -47,48 +48,37 @@
             </div>
         </section>
 
-        <!-- Players -->
+        <!-- Players (GET /api/players) -->
         <section class="section" aria-labelledby="players-title">
             <div class="container">
                 <header class="section__header">
                     <p class="eyebrow">The players</p>
                     <h2 id="players-title">Our warriors</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="player-card card">
-                        <span class="player-card__number" aria-hidden="true">9</span>
-                        <span class="player-card__position badge">Forward</span>
-                        <h3>Capi</h3>
-                        <p class="card__text">A talented forward and the team's captain, known for his leadership and goal-scoring ability.</p>
-                        <dl class="details">
-                            <div class="details__row"><dt>Position</dt><dd>Forward</dd></div>
-                            <div class="details__row"><dt>Number</dt><dd>9</dd></div>
-                            <div class="details__row"><dt>Age</dt><dd>21</dd></div>
-                        </dl>
-                    </article>
-                    <article class="player-card card">
-                        <span class="player-card__number" aria-hidden="true">22</span>
-                        <span class="player-card__position badge">Fullback</span>
-                        <h3>Gabo</h3>
-                        <p class="card__text">A relentless fullback known for his speed and vision on the field.</p>
-                        <dl class="details">
-                            <div class="details__row"><dt>Position</dt><dd>Fullback</dd></div>
-                            <div class="details__row"><dt>Number</dt><dd>22</dd></div>
-                            <div class="details__row"><dt>Age</dt><dd>19</dd></div>
-                        </dl>
-                    </article>
-                    <article class="player-card card">
-                        <span class="player-card__number" aria-hidden="true">1</span>
-                        <span class="player-card__position badge">Goalkeeper</span>
-                        <h3>Antony</h3>
-                        <p class="card__text">An exceptional goalkeeper known for his shot-stopping ability and clutch performances.</p>
-                        <dl class="details">
-                            <div class="details__row"><dt>Position</dt><dd>Goalkeeper</dd></div>
-                            <div class="details__row"><dt>Number</dt><dd>1</dd></div>
-                            <div class="details__row"><dt>Age</dt><dd>18</dd></div>
-                        </dl>
-                    </article>
+                <div class="toolbar">
+                    <div class="toolbar__group">
+                        <label for="position-filter">Position</label>
+                        <select id="position-filter">
+                            <option value="">All</option>
+                            <option value="goalkeeper">Goalkeepers</option>
+                            <option value="defender">Defenders</option>
+                            <option value="fullback">Fullbacks</option>
+                            <option value="midfielder">Midfielders</option>
+                            <option value="forward">Forwards</option>
+                        </select>
+                    </div>
+                    <div class="toolbar__group">
+                        <label for="sort-select">Sort by</label>
+                        <select id="sort-select">
+                            <option value="name">Name</option>
+                            <option value="-goals">Goals</option>
+                            <option value="-assists">Assists</option>
+                            <option value="-appearances">Appearances</option>
+                        </select>
+                    </div>
                 </div>
+                <p id="squad-status" class="status" role="status">Loading players…</p>
+                <div class="card-grid" id="players-grid"></div>
             </div>
         </section>
 
@@ -99,23 +89,7 @@
                     <p class="eyebrow">This season</p>
                     <h2 id="stats-title">Top player stats</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="stat-card card">
-                        <h3>Top scorer</h3>
-                        <p class="stat-card__value">15<span>goals</span></p>
-                        <p class="stat-card__player">Capi</p>
-                    </article>
-                    <article class="stat-card card">
-                        <h3>Most assists</h3>
-                        <p class="stat-card__value">8<span>assists</span></p>
-                        <p class="stat-card__player">Gabo</p>
-                    </article>
-                    <article class="stat-card card">
-                        <h3>Best goalkeeper</h3>
-                        <p class="stat-card__value">5<span>clean sheets</span></p>
-                        <p class="stat-card__player">Antony</p>
-                    </article>
-                </div>
+                <div class="card-grid" id="leaders-grid"></div>
             </div>
         </section>
 
@@ -130,6 +104,30 @@
             </div>
         </section>
     </main>
+
+    <!-- Admin: edit a player's stats (PATCH /api/players/:id) -->
+    <dialog id="stats-dialog" class="dialog dialog--narrow" aria-labelledby="stats-title">
+        <form id="stats-form" class="dialog__body" novalidate>
+            <h2 id="stats-title" class="dialog__title">Edit stats</h2>
+            <div class="field">
+                <label for="stats-goals">Goals</label>
+                <input type="number" id="stats-goals" name="goals" min="0" step="1" required>
+            </div>
+            <div class="field">
+                <label for="stats-assists">Assists</label>
+                <input type="number" id="stats-assists" name="assists" min="0" step="1" required>
+            </div>
+            <div class="field">
+                <label for="stats-appearances">Appearances</label>
+                <input type="number" id="stats-appearances" name="appearances" min="0" step="1" required>
+            </div>
+            <p id="stats-error" class="form__error" role="alert" hidden></p>
+            <div class="dialog__actions">
+                <button type="button" id="stats-cancel" class="btn--outline">Cancel</button>
+                <button type="submit">Save stats</button>
+            </div>
+        </form>
+    </dialog>
 
     <!-- Site footer -->
     <footer class="site-footer">
@@ -147,6 +145,9 @@
             <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/squad.js" defer></script>
 </body>
 
 </html>

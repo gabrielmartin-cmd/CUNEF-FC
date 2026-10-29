@@ -31,6 +31,7 @@
                     <li><a class="site-nav__link" href="squad.html">Squad</a></li>
                     <li><a class="site-nav__link" href="Season.html">Season</a></li>
                     <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="training.html">Training</a></li>
                     <li><a class="site-nav__link" href="login.html">Login</a></li>
                 </ul>
             </nav>
@@ -54,7 +55,7 @@
             </div>
         </section>
 
-        <!-- About + club information -->
+        <!-- About + club information (stadium, founded and next match come from the API) -->
         <section class="section" aria-labelledby="about-title">
             <div class="container split">
                 <div class="prose">
@@ -72,17 +73,24 @@
                     <h2 id="info-title">Club information</h2>
                     <dl class="info-list">
                         <div class="info-list__item">
+                            <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V4"/><path d="M4 4h13l-2 4 2 4H4"/></svg>
+                            <div>
+                                <dt>Next match</dt>
+                                <dd id="next-match" aria-live="polite">Loading…</dd>
+                            </div>
+                        </div>
+                        <div class="info-list__item">
                             <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
                             <div>
                                 <dt>Stadium</dt>
-                                <dd><a href="https://maps.app.goo.gl/pkxxNpoLSM8ebfMF9?g_st=iw">Campos de Fútbol Ganapanes</a></dd>
+                                <dd><a id="club-stadium" href="https://maps.app.goo.gl/pkxxNpoLSM8ebfMF9?g_st=iw">Campos de Fútbol Ganapanes</a></dd>
                             </div>
                         </div>
                         <div class="info-list__item">
                             <svg class="info-list__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
                             <div>
                                 <dt>Founded</dt>
-                                <dd><time datetime="2025">2025</time></dd>
+                                <dd><time id="club-founded" datetime="2025">2025</time></dd>
                             </div>
                         </div>
                         <div class="info-list__item">
@@ -125,6 +133,9 @@
             <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/home.js" defer></script>
 </body>
 
 </html>

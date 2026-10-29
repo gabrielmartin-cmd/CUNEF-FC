@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — CUNEF FC</title>
-    <meta name="description" content="CUNEF FC Login — sign in to access member resources.">
+    <meta name="description" content="CUNEF FC Login — sign in or create an account.">
     <link rel="icon" href="LogoCunefFC.PNG" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +31,7 @@
                     <li><a class="site-nav__link" href="squad.html">Squad</a></li>
                     <li><a class="site-nav__link" href="Season.html">Season</a></li>
                     <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="training.html">Training</a></li>
                     <li><a class="site-nav__link" href="login.html" aria-current="page">Login</a></li>
                 </ul>
             </nav>
@@ -38,9 +39,11 @@
     </header>
 
     <main id="main">
-        <!-- Sign-in form (front-end only, not submitted anywhere yet) -->
         <section class="auth container" aria-labelledby="page-title">
-            <form class="form">
+            <p id="already-signed-in" class="notice" role="status" hidden></p>
+
+            <!-- Sign in (POST /api/auth/login) -->
+            <form class="form" id="login-form" novalidate>
                 <div class="form__intro">
                     <img src="LogoCunefFC.PNG" alt="" width="64" height="64">
                     <h1 id="page-title" class="text-center">Sign in</h1>
@@ -49,30 +52,46 @@
 
                 <div class="field">
                     <label for="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        autocomplete="email"
-                        required
-                    >
+                    <input type="email" id="email" name="email" autocomplete="email" required>
                 </div>
 
                 <div class="field">
                     <label for="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        minlength="8"
-                        autocomplete="current-password"
-                        aria-describedby="password-hint"
-                        required
-                    >
-                    <p class="field__hint" id="password-hint">At least 8 characters.</p>
+                    <input type="password" id="password" name="password" minlength="8" autocomplete="current-password" required>
                 </div>
 
+                <p id="login-error" class="form__error" role="alert" hidden></p>
                 <button class="btn--block" type="submit">Sign in</button>
+                <p class="form__switch">New here? <button type="button" class="link-button" id="show-signup">Create an account</button></p>
+            </form>
+
+            <!-- Sign up (POST /api/users) — always creates a fan -->
+            <form class="form" id="signup-form" novalidate hidden>
+                <div class="form__intro">
+                    <img src="LogoCunefFC.PNG" alt="" width="64" height="64">
+                    <h2 class="text-center">Create account</h2>
+                    <p>Join the CUNEF FC community as a fan.</p>
+                </div>
+
+                <div class="field">
+                    <label for="signup-name">Name</label>
+                    <input type="text" id="signup-name" name="name" maxlength="100" autocomplete="name" required>
+                </div>
+
+                <div class="field">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" name="email" autocomplete="email" required>
+                </div>
+
+                <div class="field">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" minlength="8" autocomplete="new-password" aria-describedby="signup-hint" required>
+                    <p class="field__hint" id="signup-hint">At least 8 characters.</p>
+                </div>
+
+                <p id="signup-error" class="form__error" role="alert" hidden></p>
+                <button class="btn--block" type="submit">Create account</button>
+                <p class="form__switch">Already have an account? <button type="button" class="link-button" id="show-login">Sign in</button></p>
             </form>
         </section>
     </main>
@@ -93,6 +112,9 @@
             <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/login.js" defer></script>
 </body>
 
 </html>

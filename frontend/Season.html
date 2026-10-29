@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Season — CUNEF FC</title>
-    <meta name="description" content="CUNEF FC Season — fixtures, results, and league standings.">
+    <meta name="description" content="CUNEF FC Season — fixtures, call-ups, results, and league standings.">
     <link rel="icon" href="LogoCunefFC.PNG" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +31,7 @@
                     <li><a class="site-nav__link" href="squad.html">Squad</a></li>
                     <li><a class="site-nav__link" href="Season.html" aria-current="page">Season</a></li>
                     <li><a class="site-nav__link" href="News.html">News</a></li>
+                    <li><a class="site-nav__link" href="training.html">Training</a></li>
                     <li><a class="site-nav__link" href="login.html">Login</a></li>
                 </ul>
             </nav>
@@ -43,98 +44,35 @@
             <div class="container page-hero__inner">
                 <p class="eyebrow">University League</p>
                 <h1 id="page-title">Season</h1>
-                <p class="page-hero__lead">Fixtures, results and league standings — follow every matchday with CUNEF FC.</p>
+                <p class="page-hero__lead">Fixtures, call-ups, results and league standings — follow every matchday with CUNEF FC.</p>
             </div>
         </section>
 
-        <!-- Upcoming matches -->
+        <!-- Upcoming matches + published call-up (GET /api/matches?status=upcoming, GET /api/matches/:id/callup) -->
         <section class="section" aria-labelledby="fixtures-title">
             <div class="container">
                 <header class="section__header">
                     <p class="eyebrow">Don't miss it</p>
                     <h2 id="fixtures-title">Upcoming matches</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="fixture-card card">
-                        <span class="badge">League Match</span>
-                        <h3 class="fixture-card__teams">CUNEF FC <span class="fixture-card__vs">vs</span> ICADE</h3>
-                        <dl class="details">
-                            <div class="details__row"><dt>Date</dt><dd><time datetime="2025-09-20">September 20, 2025</time></dd></div>
-                            <div class="details__row"><dt>Time</dt><dd><time datetime="16:00">16:00</time></dd></div>
-                            <div class="details__row"><dt>Location</dt><dd>Campos de Fútbol Ganapanes</dd></div>
-                        </dl>
-                    </article>
-                    <article class="fixture-card card">
-                        <span class="badge">League Match</span>
-                        <h3 class="fixture-card__teams">Universidad Politécnica <span class="fixture-card__vs">vs</span> CUNEF FC</h3>
-                        <dl class="details">
-                            <div class="details__row"><dt>Date</dt><dd><time datetime="2025-09-27">September 27, 2025</time></dd></div>
-                            <div class="details__row"><dt>Time</dt><dd><time datetime="18:30">18:30</time></dd></div>
-                            <div class="details__row"><dt>Location</dt><dd>Campus Universidad Politécnica</dd></div>
-                        </dl>
-                    </article>
-                    <article class="fixture-card card">
-                        <span class="badge">League Match</span>
-                        <h3 class="fixture-card__teams">CUNEF FC <span class="fixture-card__vs">vs</span> Universidad de Comillas</h3>
-                        <dl class="details">
-                            <div class="details__row"><dt>Date</dt><dd><time datetime="2025-10-04">October 4, 2025</time></dd></div>
-                            <div class="details__row"><dt>Time</dt><dd><time datetime="15:00">15:00</time></dd></div>
-                            <div class="details__row"><dt>Location</dt><dd>Campos de Fútbol Ganapanes</dd></div>
-                        </dl>
-                    </article>
-                </div>
+                <p id="fixtures-status" class="status" role="status">Loading fixtures…</p>
+                <div class="card-grid" id="fixtures-grid"></div>
             </div>
         </section>
 
-        <!-- Latest results -->
+        <!-- Latest results (GET /api/matches?status=played) -->
         <section class="section" aria-labelledby="results-title">
             <div class="container">
                 <header class="section__header">
                     <p class="eyebrow">Full time</p>
                     <h2 id="results-title">Latest results</h2>
                 </header>
-                <div class="card-grid">
-                    <article class="result-card card">
-                        <h3 class="result-card__score">
-                            <span class="result-card__team">CUNEF FC</span>
-                            <span class="result-card__value">3 - 1</span>
-                            <span class="result-card__team">ESIC</span>
-                        </h3>
-                        <p class="card__text"><strong>Scorers:</strong> Capi (2), Gabo (1)</p>
-                        <div class="result-card__footer">
-                            <p class="card__meta"><time datetime="2025-09-13">September 13, 2025</time></p>
-                            <span class="badge badge--win">Victory</span>
-                        </div>
-                    </article>
-                    <article class="result-card card">
-                        <h3 class="result-card__score">
-                            <span class="result-card__team">Universidad Francisco Victoria</span>
-                            <span class="result-card__value">2 - 2</span>
-                            <span class="result-card__team">CUNEF FC</span>
-                        </h3>
-                        <p class="card__text"><strong>Scorers:</strong> Capi (1), Antony Own Goal (1)</p>
-                        <div class="result-card__footer">
-                            <p class="card__meta"><time datetime="2025-09-06">September 6, 2025</time></p>
-                            <span class="badge badge--draw">Draw</span>
-                        </div>
-                    </article>
-                    <article class="result-card card">
-                        <h3 class="result-card__score">
-                            <span class="result-card__team">CUNEF FC</span>
-                            <span class="result-card__value">4 - 0</span>
-                            <span class="result-card__team">IE</span>
-                        </h3>
-                        <p class="card__text"><strong>Scorers:</strong> Capi (2), Gabo (1), Pau (1)</p>
-                        <div class="result-card__footer">
-                            <p class="card__meta"><time datetime="2025-08-30">August 30, 2025</time></p>
-                            <span class="badge badge--win">Victory</span>
-                        </div>
-                    </article>
-                </div>
+                <p id="results-status" class="status" role="status">Loading results…</p>
+                <div class="card-grid" id="results-grid"></div>
             </div>
         </section>
 
-        <!-- League standings -->
+        <!-- League standings (GET /api/standings) -->
         <section class="section" aria-labelledby="standings-title">
             <div class="container">
                 <header class="section__header">
@@ -142,9 +80,10 @@
                     <h2 id="standings-title">Classification</h2>
                     <p class="lead">CUNEF FC's current position in the university football league.</p>
                 </header>
+                <p id="standings-status" class="status" role="status">Loading standings…</p>
                 <div class="table-wrap" role="region" aria-labelledby="standings-caption" tabindex="0">
                     <table class="standings">
-                        <caption id="standings-caption">University League — Matchday 5</caption>
+                        <caption id="standings-caption">University League</caption>
                         <thead>
                             <tr>
                                 <th scope="col"><abbr title="Position">#</abbr></th>
@@ -157,41 +96,33 @@
                                 <th scope="col"><abbr title="Points">Pts</abbr></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr class="is-cunef">
-                                <th scope="row">1</th>
-                                <td>CUNEF FC</td><td>5</td><td>3</td><td>2</td><td>0</td><td>+7</td><td>11</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>ICADE</td><td>5</td><td>3</td><td>1</td><td>1</td><td>+4</td><td>10</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Universidad Politécnica</td><td>5</td><td>2</td><td>2</td><td>1</td><td>+3</td><td>8</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">4</th>
-                                <td>Universidad Francisco Victoria</td><td>5</td><td>2</td><td>2</td><td>1</td><td>+1</td><td>8</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">5</th>
-                                <td>Universidad de Comillas</td><td>5</td><td>2</td><td>1</td><td>2</td><td>0</td><td>7</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">6</th>
-                                <td>ESIC</td><td>5</td><td>1</td><td>1</td><td>3</td><td>-5</td><td>4</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">7</th>
-                                <td>IE</td><td>5</td><td>0</td><td>0</td><td>5</td><td>-10</td><td>0</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="standings-body"></tbody>
                     </table>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- Admin: choose, save and publish a call-up (PUT /api/matches/:id/callup, PATCH /api/matches/:id) -->
+    <dialog id="callup-dialog" class="dialog" aria-labelledby="callup-title">
+        <div class="dialog__body">
+            <h2 id="callup-title" class="dialog__title">Call-up</h2>
+            <p id="callup-match" class="card__meta"></p>
+            <p id="callup-counter" class="callup-counter" role="status" aria-live="polite"></p>
+            <div class="table-wrap" tabindex="0" role="region" aria-label="Squad players">
+                <table class="simple-table">
+                    <thead><tr><th scope="col">Player</th><th scope="col">Position</th><th scope="col">Call-up</th></tr></thead>
+                    <tbody id="callup-rows"></tbody>
+                </table>
+            </div>
+            <p id="callup-msg" role="status" hidden></p>
+            <div class="dialog__actions">
+                <button type="button" id="callup-close" class="btn--outline">Close</button>
+                <button type="button" id="callup-publish" class="btn--outline">Publish call-up</button>
+                <button type="button" id="callup-save">Save call-up</button>
+            </div>
+        </div>
+    </dialog>
 
     <!-- Site footer -->
     <footer class="site-footer">
@@ -209,6 +140,9 @@
             <p class="site-footer__legal">&copy; 2026 CUNEF FC. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/season.js" defer></script>
 </body>
 
 </html>
