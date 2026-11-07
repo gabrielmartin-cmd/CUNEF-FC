@@ -14,7 +14,7 @@
 //
 // Flujo completo:
 //   1. login correcto -> el servidor crea el token con signToken() y se lo devuelve al navegador.
-//   2. el navegador lo guarda (localStorage, ver frontend/js/api.js) y lo manda en cada petición
+//   2. el navegador lo guarda (localStorage, ver public/js/api.js) y lo manda en cada petición
 //      en la cabecera:  Authorization: Bearer <token>
 //   3. en las rutas protegidas, estos middleware leen esa cabecera, verifican el token y dejan
 //      los datos del usuario en req.user para que el controlador los use.

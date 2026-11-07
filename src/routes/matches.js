@@ -1,23 +1,16 @@
-// routes/matches.js — router "fino": solo conecta rutas con funciones del controlador.
-// Aquí también se declara quién puede llamar a cada ruta (middleware de autenticación/rol).
-
+// routes/matches.js — /api/matches y su convocatoria. Leer es público; escribir, solo admin.
 const router = require('express').Router();
 const { optionalAuth, requireRole } = require('../middleware/auth');
-const { listMatches, getCallup, saveCallup, updateMatch } = require('../controllers/matchesController');
+const c = require('../controllers/matchesController');
 
-// GET /api/matches?status=upcoming|played&teamId=&sort=&page=&limit=   (público)
-// teamId es un extra útil: "solo los partidos de mi club" (Home/Season).
-router.get('/', listMatches);
+router.get('/', c.listMatches);                           // ?status=upcoming|played&teamId=&sort=&limit=
+router.get('/:id', c.getMatch);
+router.post('/', requireRole('admin'), c.createMatch);
+router.put('/:id', requireRole('admin'), c.replaceMatch);
+router.delete('/:id', requireRole('admin'), c.deleteMatch);
 
-// GET /api/matches/:id/callup
-// Visitantes/fans/players: 404 hasta que se publique. Admin: siempre.
-router.get('/:id/callup', optionalAuth, getCallup);
-
-// PUT /api/matches/:id/callup   body: { players: [{ playerId, role }] }   (Admin)
-// Sustituye la lista ENTERA (por eso PUT y no PATCH).
-router.put('/:id/callup', requireRole('admin'), saveCallup);
-
-// PATCH /api/matches/:id   body: { callupPublished: true|false }   (Admin)
-router.patch('/:id', requireRole('admin'), updateMatch);
+// Convocatoria: optionalAuth porque el admin ve también la que aún no está publicada.
+router.get('/:id/callup', optionalAuth, c.getCallup);
+router.put('/:id/callup', requireRole('admin'), c.saveCallup);
 
 module.exports = router;

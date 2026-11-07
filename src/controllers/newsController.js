@@ -1,10 +1,10 @@
-// newsController.js — lógica de los handlers de Noticias del club.
-// Las rutas (routes/news.js) solo conectan URL + middleware con estas funciones.
+// newsController.js — lógica de /api/news.
+// Publican los players y el admin. Editar o borrar: solo el autor de la noticia o el admin.
+const store = require('../data/store');
+const { validateNews } = require('../validators/newsValidator');
+const { toId, notFound, forbidden, validationError, parseLimitQuery, parseSort } = require('../utils');
 
-const News = require('../models/news');
-const { badRequest, requireBody, parsePaging, parseSort, paged } = require('../utils');
-
-const SORTS = { createdAt: 'created_at' };
+const SORTS = { createdAt: 'created_at', title: 'title' };
 
 const mapNews = (r) => ({
     id: r.news_id,
@@ -14,24 +14,56 @@ const mapNews = (r) => ({
     author: { id: r.author_id, name: r.author_name }
 });
 
-// GET /api/news?sort=-createdAt&page=&limit=   (público)
+function findOr404(rawId) {
+    const id = toId(rawId);
+    const row = id && store.news.findById(id);
+    if (!row) throw notFound('News not found');
+    return row;
+}
+
+function validateBody(body) {
+    const { valid, errors, data } = validateNews(body);
+    if (!valid) throw validationError(errors);
+    return data;
+}
+
+// El permiso se mira en el token (req.user), nunca en el body.
+function requireAuthorOrAdmin(req, row) {
+    if (req.user.role !== 'admin' && row.author_id !== req.user.userId) throw forbidden('Only the author or an admin can change this news');
+}
+
+// GET /api/news?sort=&limit=
 function listNews(req, res) {
     const sort = parseSort(req.query.sort, SORTS, '-createdAt');
-    const paging = parsePaging(req.query, { defLimit: 10, maxLimit: 50 });
-    const { rows, total } = News.list({ sort, limit: paging.limit, offset: paging.offset });
-    res.json(paged(rows.map(mapNews), paging, total));
+    const limit = parseLimitQuery(req.query.limit, 50);
+    res.json(store.news.list({ sort, limit }).map(mapNews));
 }
 
-// POST /api/news  body: { title, information }   (solo Player). El autor sale del token.
+// GET /api/news/:id
+function getNews(req, res) {
+    res.json(mapNews(findOr404(req.params.id)));
+}
+
+// POST /api/news
 function createNews(req, res) {
-    const { title, information } = requireBody(req);
-    if (typeof title !== 'string' || title.trim().length < 1 || title.trim().length > 120)
-        throw badRequest('title is required (1 to 120 characters)');
-    if (typeof information !== 'string' || information.trim().length < 1 || information.trim().length > 2000)
-        throw badRequest('information is required (1 to 2000 characters)');
-
-    const id = News.create({ title: title.trim(), information: information.trim(), authorId: req.user.userId });
-    res.status(201).json(mapNews(News.findById(id)));
+    const id = store.news.create(validateBody(req.body), req.user.userId);
+    res.status(201).location(`/api/news/${id}`).json(mapNews(store.news.findById(id)));
 }
 
-module.exports = { listNews, createNews };
+// PUT /api/news/:id
+function replaceNews(req, res) {
+    const current = findOr404(req.params.id);
+    requireAuthorOrAdmin(req, current);
+    store.news.replace(current.news_id, validateBody(req.body));
+    res.json(mapNews(store.news.findById(current.news_id)));
+}
+
+// DELETE /api/news/:id
+function deleteNews(req, res) {
+    const current = findOr404(req.params.id);
+    requireAuthorOrAdmin(req, current);
+    store.news.remove(current.news_id);
+    res.status(204).end();
+}
+
+module.exports = { listNews, getNews, createNews, replaceNews, deleteNews };

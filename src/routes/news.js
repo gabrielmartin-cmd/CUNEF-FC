@@ -1,14 +1,13 @@
-// routes/news.js — router "fino": solo conecta rutas con funciones del controlador.
-// Aquí también se declara quién puede llamar a cada ruta (middleware de autenticación/rol).
-
+// routes/news.js — /api/news. Leer es público; publicar, players y admin.
+// Editar/borrar: también players y admin, y el controlador comprueba que seas el autor (o admin).
 const router = require('express').Router();
 const { requireRole } = require('../middleware/auth');
-const { listNews, createNews } = require('../controllers/newsController');
+const c = require('../controllers/newsController');
 
-// GET /api/news?sort=-createdAt&page=&limit=   (público)
-router.get('/', listNews);
-
-// POST /api/news  body: { title, information }   (solo Player). El autor sale del token.
-router.post('/', requireRole('player'), createNews);
+router.get('/', c.listNews);
+router.get('/:id', c.getNews);
+router.post('/', requireRole('player', 'admin'), c.createNews);
+router.put('/:id', requireRole('player', 'admin'), c.replaceNews);
+router.delete('/:id', requireRole('player', 'admin'), c.deleteNews);
 
 module.exports = router;

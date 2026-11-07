@@ -1,102 +1,120 @@
-// playersController.js — lógica de los handlers de Jugadores y sus estadísticas.
-// Las rutas (routes/players.js) solo conectan URL + middleware con estas funciones.
-//
-// Todos los controladores siguen el mismo patrón, este es el más sencillo para estudiarlo:
-//   1. leer y VALIDAR la entrada (req.params, req.query, req.body)
-//   2. pedir o modificar los datos a través del MODELO (src/models/players.js)
-//   3. convertir las filas al formato de la API (mapPlayer)
-//   4. responder con res.json(...)
-// Los errores se "lanzan" con throw y los responde el gestor de errores de app.js.
-// El controlador NO sabe si los datos están en un array (data.js) o en una base de datos:
-// eso es cosa del modelo. Por eso este archivo no cambiará cuando añadamos la BD.
-
-const Players = require('../models/players');
-const Teams = require('../models/teams');
+// playersController.js — lógica de /api/players (recurso PRINCIPAL).
+// Cada handler sigue los mismos pasos: leer/validar la petición -> pedir al store -> responder.
+const store = require('../data/store');
+const { validatePlayer, POSITIONS } = require('../validators/playerValidator');
 const {
-    toId, notFound, badRequest, isNonNegInt, isPlainObject, requireBody,
-    parsePaging, parseSort, parseEnumQuery, paged
+    toId, notFound, validationError,
+    parseSearchQuery, parseEnumQuery, parseBoolQuery, parseLimitQuery, parseSort
 } = require('../utils');
 
-// Listas blancas: solo se aceptan estos valores del cliente.
-const POSITIONS = ['goalkeeper', 'defender', 'fullback', 'midfielder', 'forward'];
-// ?sort=goals se traduce a la columna goals. Si el cliente manda otra cosa -> 400.
-const SORTS = { name: 'player_name', goals: 'goals', assists: 'assists', appearances: 'appearances' };
+// ?sort= admitidos (nombre en la API -> columna guardada)
+const SORTS = { name: 'player_name', goals: 'goals', assists: 'assists', appearances: 'appearances', shirtNumber: 'shirt_number' };
 
-// La edad no se guarda (cambiaría cada año): se calcula a partir de la fecha de nacimiento.
 function ageFrom(dob) {
-    if (!dob) return null;
     const b = new Date(dob), n = new Date();
     let age = n.getFullYear() - b.getFullYear();
     if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) age--;
     return age;
 }
 
-// Traduce una fila de datos (snake_case: player_name) al JSON de la API (camelCase: name).
-// Así el front no depende de cómo se llamen las columnas por dentro.
-function mapPlayer(r) {
-    return {
-        id: r.player_id,
-        name: r.player_name,
-        shirtNumber: r.shirt_number,
-        description: r.description,
-        position: r.position,
-        status: r.status,
-        height: r.height,
-        weight: r.weight,
-        dob: r.dob,
-        age: ageFrom(r.dob),
-        teamId: r.team_id,
-        teamName: r.team_name,
-        stats: { goals: r.goals, assists: r.assists, appearances: r.appearances }
-    };
+// fila guardada (snake_case) -> JSON de la API (camelCase)
+const mapPlayer = (r) => ({
+    id: r.player_id,
+    name: r.player_name,
+    shirtNumber: r.shirt_number,
+    position: r.position,
+    dob: r.dob,
+    age: ageFrom(r.dob),
+    height: r.height,
+    weight: r.weight,
+    goals: r.goals,
+    assists: r.assists,
+    appearances: r.appearances,
+    injured: r.injured,
+    description: r.description,
+    teamId: r.team_id,
+    teamName: r.team_name
+});
+
+function findOr404(rawId) {
+    const id = toId(rawId);                       // "12" -> 12 ; "abc" -> null
+    const row = id && store.players.findById(id);
+    if (!row) throw notFound('Player not found');
+    return row;
 }
 
-// GET /api/players?position=&sort=-goals&page=&limit=
+// Valida el body y, además, que el equipo exista. Lanza 400 con TODOS los errores juntos.
+function validateBody(body) {
+    const { valid, errors, data } = validatePlayer(body);
+    if (data.teamId && !store.teams.findById(data.teamId)) errors.push({ field: 'teamId', message: 'teamId does not match any team' });
+    if (!valid || errors.length) throw validationError(errors);
+    return data;
+}
+
+// GET /api/players?search=&position=&injured=&sort=&limit=   (endpoint FILTRADO; los filtros se combinan)
 function listPlayers(req, res) {
-    // 1. Validar los parámetros de la URL (req.query). Si alguno es inválido, lanzan un 400.
-    const position = parseEnumQuery(req.query.position, POSITIONS, 'position');
-    const sort = parseSort(req.query.sort, SORTS, 'name');            // { column: 'goals', dir: 'DESC' }
-    const paging = parsePaging(req.query, { defLimit: 20, maxLimit: 100 });
+    const filters = {
+        search: parseSearchQuery(req.query.search),
+        position: parseEnumQuery(req.query.position, POSITIONS, 'position'),
+        injured: parseBoolQuery(req.query.injured, 'injured'),
+        sort: parseSort(req.query.sort, SORTS, 'name'),
+        limit: parseLimitQuery(req.query.limit)
+    };
+    res.json(store.players.list(filters).map(mapPlayer));      // array, puede estar vacío
+}
 
-    // 2. Pedir los datos al modelo. total = cuántos jugadores hay (para que el front sepa cuántas páginas hay).
-    const { rows, total } = Players.list({ position, sort, limit: paging.limit, offset: paging.offset });
+// GET /api/players/stats — resumen calculado EN CADA PETICIÓN (no se guarda en ningún sitio).
+function getStats(req, res) {
+    const players = store.players.list().map(mapPlayer);
+    const total = players.length;
+    const sum = (key) => players.reduce((acc, p) => acc + p[key], 0);
+    const round1 = (n) => Math.round(n * 10) / 10;
+    const leader = (key) => {
+        if (!total) return null;
+        const best = players.reduce((a, b) => (b[key] > a[key] ? b : a));
+        return { id: best.id, name: best.name, value: best[key] };
+    };
+    const byPosition = Object.fromEntries(POSITIONS.map((pos) => [pos, players.filter((p) => p.position === pos).length]));
+    const injured = players.filter((p) => p.injured).length;
 
-    // 3 y 4. Responde { data: [...jugadores], page, limit, total }
-    res.json(paged(rows.map(mapPlayer), paging, total));
+    res.json({
+        total,
+        injured,
+        available: total - injured,
+        averageAge: total ? round1(sum('age') / total) : 0,
+        totalGoals: sum('goals'),
+        totalAssists: sum('assists'),
+        averageGoals: total ? round1(sum('goals') / total) : 0,
+        byPosition,
+        leaders: { goals: leader('goals'), assists: leader('assists'), appearances: leader('appearances') }
+    });
 }
 
 // GET /api/players/:id
 function getPlayer(req, res) {
-    const id = toId(req.params.id);              // "12" -> 12 ; "abc" -> null
-    const row = id && Players.findById(id);
-    if (!row) throw notFound('Player not found');
-    res.json(mapPlayer(row));
+    res.json(mapPlayer(findOr404(req.params.id)));
 }
 
-// PATCH /api/players/:id  body: { stats: {goals, assists, appearances}, teamId? }   (Admin)
-// Aquí no comprobamos el rol: cuando se llega a esta función, requireRole('admin') (en la ruta)
-// ya ha garantizado que quien llama es admin.
-function updatePlayer(req, res) {
-    const id = toId(req.params.id);
-    const current = id && Players.findById(id);
-    if (!current) throw notFound('Player not found');
-
-    const body = requireBody(req);
-    const { stats, teamId } = body;
-    if (!isPlainObject(stats)) throw badRequest('stats is required and must be an object');
-    for (const k of ['goals', 'assists', 'appearances']) {
-        if (!isNonNegInt(stats[k])) throw badRequest(`stats.${k} must be an integer ≥ 0`);
-    }
-    if (teamId !== undefined) {
-        if (!Number.isInteger(teamId) || teamId < 1) throw badRequest('teamId must be an integer');
-        if (!Teams.findById(teamId)) throw notFound('Team not found');
-    }
-
-    // Aquí es donde el dato se modifica DE VERDAD. Si no se envía teamId (null) se deja el equipo que ya tenía.
-    Players.updateStats(id, stats, teamId ?? null);
-
-    // Devolvemos el jugador ya actualizado para que el front pueda repintarlo.
-    res.json(mapPlayer(Players.findById(id)));
+// POST /api/players  -> 201 + cabecera Location con la URL del nuevo jugador
+function createPlayer(req, res) {
+    const data = validateBody(req.body);
+    const id = store.players.create(data);
+    res.status(201).location(`/api/players/${id}`).json(mapPlayer(store.players.findById(id)));
 }
 
-module.exports = { listPlayers, getPlayer, updatePlayer };
+// PUT /api/players/:id  -> sustituye el jugador entero (por eso se validan todos los campos)
+function replacePlayer(req, res) {
+    const current = findOr404(req.params.id);
+    const data = validateBody(req.body);
+    store.players.replace(current.player_id, data);
+    res.json(mapPlayer(store.players.findById(current.player_id)));
+}
+
+// DELETE /api/players/:id  -> 204 sin cuerpo
+function deletePlayer(req, res) {
+    const current = findOr404(req.params.id);
+    store.players.remove(current.player_id);
+    res.status(204).end();
+}
+
+module.exports = { listPlayers, getStats, getPlayer, createPlayer, replacePlayer, deletePlayer };

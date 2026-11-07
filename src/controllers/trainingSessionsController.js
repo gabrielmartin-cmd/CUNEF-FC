@@ -1,13 +1,12 @@
-// trainingSessionsController.js — lógica de los handlers de Sesiones de entrenamiento.
-// Las rutas (routes/trainingSessions.js) solo conectan URL + middleware con estas funciones.
-
-const TrainingSessions = require('../models/trainingSessions');
+// trainingSessionsController.js — lógica de /api/training-sessions.
+// Visitantes y fans solo ven las sesiones públicas; players y admin las ven todas.
+const store = require('../data/store');
+const { validateTrainingSession, TYPES } = require('../validators/trainingSessionValidator');
 const {
-    toId, notFound, badRequest, requireBody, todayStr, isValidDate, isValidTime,
-    parsePaging, parseSort, parseEnumQuery, parseDateQuery, paged
+    toId, notFound, badRequest, validationError, todayStr,
+    parseEnumQuery, parseDateQuery, parseLimitQuery, parseSort
 } = require('../utils');
 
-const TYPES = ['tactical', 'physical', 'recovery'];
 const SORTS = { date: 'session_date' };
 
 const mapSession = (r) => ({
@@ -21,84 +20,64 @@ const mapSession = (r) => ({
     createdBy: r.created_by
 });
 
-// Valida los campos enviados con las reglas de la Tabla 4. Devuelve { columna: valor }.
-// En PATCH solo se validan los campos que vienen en el body.
-function validateFields(body, { requireAll }) {
-    const out = {};
-    const has = (k) => body[k] !== undefined;
+const canSeePrivate = (req) => ['player', 'admin'].includes(req.user?.role);
 
-    if (requireAll || has('date')) {
-        if (!isValidDate(body.date)) throw badRequest('date is required and must be a valid date (YYYY-MM-DD)');
-        if (body.date < todayStr()) throw badRequest('date cannot be in the past');
-        out.session_date = body.date;
-    }
-    if (requireAll || has('startTime')) {
-        if (!isValidTime(body.startTime)) throw badRequest('startTime is required (format HH:MM)');
-        out.start_time = body.startTime;
-    }
-    if (requireAll || has('location')) {
-        if (typeof body.location !== 'string' || body.location.trim().length < 1 || body.location.trim().length > 100)
-            throw badRequest('location is required (1 to 100 characters)');
-        out.location = body.location.trim();
-    }
-    if (requireAll || has('type')) {
-        if (!TYPES.includes(body.type)) throw badRequest(`type is required and must be one of: ${TYPES.join(', ')}`);
-        out.type = body.type;
-    }
-    if (has('notes')) {
-        if (body.notes !== null && (typeof body.notes !== 'string' || body.notes.length > 500))
-            throw badRequest('notes must be a text of at most 500 characters');
-        out.notes = body.notes;
-    }
-    if (has('isPublic')) {
-        if (typeof body.isPublic !== 'boolean') throw badRequest('isPublic must be a boolean');
-        out.is_public = body.isPublic ? 1 : 0;
-    }
-    return out;
+function findOr404(req) {
+    const id = toId(req.params.id);
+    const row = id && store.trainingSessions.findById(id);
+    // Una sesión privada "no existe" para quien no puede verla.
+    if (!row || (row.is_public !== 1 && !canSeePrivate(req))) throw notFound('Session not found');
+    return row;
 }
 
-// GET /api/training-sessions?from=&to=&type=&sort=&page=&limit=
-// Visitantes y fans: solo sesiones públicas. Player y Admin: todas.
+function validateBody(body) {
+    const { valid, errors, data } = validateTrainingSession(body);
+    if (!valid) throw validationError(errors);
+    return data;
+}
+
+// GET /api/training-sessions?from=&to=&type=&sort=&limit=
 function listSessions(req, res) {
-    const from = parseDateQuery(req.query.from, 'from') ?? todayStr();       // por defecto: desde hoy
+    const from = parseDateQuery(req.query.from, 'from');
     const to = parseDateQuery(req.query.to, 'to');
-    if (to && to < from) throw badRequest('to cannot be before from');
-    const type = parseEnumQuery(req.query.type, TYPES, 'type');
-    const sort = parseSort(req.query.sort, SORTS, 'date');
-    const paging = parsePaging(req.query, { defLimit: 20, maxLimit: 100 });
-    // Visitantes (req.user = null) y fans solo ven las públicas
-    const onlyPublic = !['player', 'admin'].includes(req.user?.role);
-
-    const { rows, total } = TrainingSessions.list({ from, to, type, onlyPublic, sort, limit: paging.limit, offset: paging.offset });
-    res.json(paged(rows.map(mapSession), paging, total));
+    if (from && to && to < from) throw badRequest('to', 'to cannot be before from');
+    const filters = {
+        from, to,
+        type: parseEnumQuery(req.query.type, TYPES, 'type'),
+        onlyPublic: !canSeePrivate(req),
+        sort: parseSort(req.query.sort, SORTS, 'date'),
+        limit: parseLimitQuery(req.query.limit)
+    };
+    res.json(store.trainingSessions.list(filters).map(mapSession));
 }
 
-// POST /api/training-sessions   (Admin)
-// Al crear la sesión se crea una asistencia "pending" para TODA la plantilla (misma transacción).
+// GET /api/training-sessions/:id
+function getSession(req, res) {
+    res.json(mapSession(findOr404(req)));
+}
+
+// POST /api/training-sessions   (también crea la asistencia "pending" de toda la plantilla)
 function createSession(req, res) {
-    const fields = validateFields(requireBody(req), { requireAll: true });
+    const { valid, errors, data } = validateTrainingSession(req.body);
+    if (data.date && data.date < todayStr()) errors.push({ field: 'date', message: 'date cannot be in the past' });
+    if (!valid || errors.length) throw validationError(errors);
 
-    const id = TrainingSessions.create(fields, req.user.userId);   // también crea las asistencias "pending"
-    res.status(201).json(mapSession(TrainingSessions.findById(id)));
+    const id = store.trainingSessions.create(data, req.user.userId);
+    res.status(201).location(`/api/training-sessions/${id}`).json(mapSession(store.trainingSessions.findById(id)));
 }
 
-// PATCH /api/training-sessions/:id   (Admin)
-function updateSession(req, res) {
-    const id = toId(req.params.id);
-    if (!id || !TrainingSessions.findById(id)) throw notFound('Session not found');
-
-    const fields = validateFields(requireBody(req), { requireAll: false });
-    if (Object.keys(fields).length === 0) throw badRequest('At least one field to change is required');
-
-    TrainingSessions.update(id, fields);       // los nombres de columna salen de validateFields, no del cliente
-    res.json(mapSession(TrainingSessions.findById(id)));
+// PUT /api/training-sessions/:id   (el admin puede corregir también sesiones pasadas)
+function replaceSession(req, res) {
+    const current = findOr404(req);
+    store.trainingSessions.replace(current.session_id, validateBody(req.body));
+    res.json(mapSession(store.trainingSessions.findById(current.session_id)));
 }
 
-// DELETE /api/training-sessions/:id   (Admin) -> 204. Sus asistencias se borran en cascada.
+// DELETE /api/training-sessions/:id   (borra también sus asistencias)
 function deleteSession(req, res) {
-    const id = toId(req.params.id);
-    if (!id || !TrainingSessions.remove(id)) throw notFound('Session not found');
+    const current = findOr404(req);
+    store.trainingSessions.remove(current.session_id);
     res.status(204).end();
 }
 
-module.exports = { listSessions, createSession, updateSession, deleteSession };
+module.exports = { listSessions, getSession, createSession, replaceSession, deleteSession };

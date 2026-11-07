@@ -1,13 +1,14 @@
-// logger.js — middleware propio que registra cada petición recibida.
+// logger.js — middleware propio: una línea por petición, p. ej. "GET /api/players?search=ca 200 2ms".
 
-// Todo middleware recibe (req, res, next).
 function logger(req, res, next) {
-  // Imprime una línea por petición con el método HTTP y la URL, p. ej. "GET /tasks".
-  console.log(`${req.method} ${req.url}`);
-  // Pasa el control al siguiente middleware/ruta. Sin next() la petición
-  // se quedaría colgada y el cliente nunca recibiría respuesta.
-  next();
+    if (process.env.NODE_ENV === 'test') return next();      // npm test: sin ruido en la consola
+    const start = Date.now();
+    // 'finish' se dispara cuando la respuesta ya se ha enviado: así podemos mostrar el código de estado.
+    res.on('finish', () => {
+        console.log(`${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - start}ms`);
+    });
+    // Pasa el control al siguiente middleware/ruta. Sin next() la petición se quedaría colgada.
+    next();
 }
 
-// Se exporta para registrarlo en app.js con app.use(logger).
 module.exports = logger;

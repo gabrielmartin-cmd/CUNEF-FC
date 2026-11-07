@@ -1,7 +1,7 @@
 // standingsController.js — lógica de los handlers de Clasificación de la liga (calculada con los partidos jugados).
 // Las rutas (routes/standings.js) solo conectan URL + middleware con estas funciones.
 
-const Standings = require('../models/standings');
+const Standings = require('../data/store').standings;
 
 // GET /api/standings -> clasificación calculada a partir de los partidos jugados (3-1-0)
 function listStandings(req, res) {

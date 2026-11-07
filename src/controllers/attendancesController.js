@@ -1,13 +1,13 @@
-// attendancesController.js — lógica de los handlers de Asistencia de los jugadores a los entrenamientos.
-// Las rutas (routes/attendances.js) solo conectan URL + middleware con estas funciones.
-
-const Attendances = require('../models/attendances');
+// attendancesController.js — lógica de /api/attendances.
+//   admin  -> lo ve y lo cambia todo
+//   player -> solo ve las suyas y solo puede cambiar status/reason (confirmed o absent) antes de que empiece la sesión
+//   fan / visitante -> 403 / 401
+const store = require('../data/store');
+const { validateAttendance, STATUSES } = require('../validators/attendanceValidator');
 const {
-    toId, notFound, badRequest, conflict, requireBody, HttpError, pad,
-    parsePaging, parseEnumQuery, parseDateQuery, paged
+    toId, notFound, forbidden, conflict, badRequest, validationError, nowStr,
+    parseEnumQuery, parseIdQuery, parseDateQuery
 } = require('../utils');
-
-const STATUSES = ['pending', 'confirmed', 'absent', 'injured'];
 
 const mapAttendance = (r) => ({
     id: r.attendance_id,
@@ -19,78 +19,86 @@ const mapAttendance = (r) => ({
     session: { date: r.session_date, startTime: r.start_time, type: r.type, location: r.location }
 });
 
-// Solo player (con jugador asociado) y admin tienen asistencias. Un fan recibe 403.
-// Este archivo enseña el SEGUNDO nivel de permisos. requireRole() de la ruta solo mira el rol;
-// aquí además se mira de QUIÉN es el dato: un player solo ve y cambia SUS asistencias.
-// Eso no se puede decidir en la ruta, porque hay que leer el dato para saber quién es su dueño.
 function requireSquadAccess(req) {
     const { role, playerId } = req.user;
-    if (role === 'admin') return;
-    if (role === 'player' && playerId) return;
-    throw new HttpError(403, 'Only players and admins have attendances');
+    if (role === 'admin' || (role === 'player' && playerId)) return;
+    throw forbidden('Only players and admins have attendances');
 }
 
-// GET /api/attendances?sessionId=&playerId=&status=&from=&to=&page=&limit=
-// Mismo endpoint para player y admin: el servidor filtra por el playerId del token.
+function findOr404(req) {
+    const id = toId(req.params.id);
+    const row = id && store.attendances.findById(id);
+    if (!row) throw notFound('Attendance not found');
+    if (req.user.role !== 'admin' && row.player_id !== req.user.playerId) throw forbidden('This attendance is not yours');
+    return row;
+}
+
+// Valida el body y que la sesión y el jugador existan.
+function validateBody(body) {
+    const { errors, data } = validateAttendance(body);
+    if (data.sessionId && !store.trainingSessions.findById(data.sessionId)) errors.push({ field: 'sessionId', message: 'sessionId does not match any session' });
+    if (data.playerId && !store.players.findById(data.playerId)) errors.push({ field: 'playerId', message: 'playerId does not match any player' });
+    if (errors.length) throw validationError(errors);
+    if (data.status !== 'absent' && data.status !== 'injured') data.reason = null;   // el motivo solo tiene sentido si no viene
+    return data;
+}
+
+// GET /api/attendances?sessionId=&playerId=&status=&from=&to=
 function listAttendances(req, res) {
     requireSquadAccess(req);
-
-    const filters = {};
-    if (req.user.role === 'player') {
-        // siempre las suyas: el playerId sale del TOKEN, no de ?playerId= (que un player podría falsear)
-        filters.playerId = req.user.playerId;
-    } else if (req.query.playerId !== undefined) {
-        const pid = toId(req.query.playerId);
-        if (!pid) throw badRequest('playerId must be a positive integer');
-        filters.playerId = pid;
-    }
-    if (req.query.sessionId !== undefined) {
-        const sid = toId(req.query.sessionId);
-        if (!sid) throw badRequest('sessionId must be a positive integer');
-        filters.sessionId = sid;
-    }
-    filters.status = parseEnumQuery(req.query.status, STATUSES, 'status');
-    filters.from = parseDateQuery(req.query.from, 'from');
-    filters.to = parseDateQuery(req.query.to, 'to');
-    if (filters.from && filters.to && filters.to < filters.from) throw badRequest('to cannot be before from');
-    const paging = parsePaging(req.query, { defLimit: 50, maxLimit: 100 });
-
-    const { rows, total } = Attendances.list({ ...filters, limit: paging.limit, offset: paging.offset });
-    res.json(paged(rows.map(mapAttendance), paging, total));
+    const filters = {
+        // un player solo ve las suyas, aunque pida otro playerId
+        playerId: req.user.role === 'player' ? req.user.playerId : parseIdQuery(req.query.playerId, 'playerId'),
+        sessionId: parseIdQuery(req.query.sessionId, 'sessionId'),
+        status: parseEnumQuery(req.query.status, STATUSES, 'status'),
+        from: parseDateQuery(req.query.from, 'from'),
+        to: parseDateQuery(req.query.to, 'to')
+    };
+    if (filters.from && filters.to && filters.to < filters.from) throw badRequest('to', 'to cannot be before from');
+    res.json(store.attendances.list(filters).map(mapAttendance));
 }
 
-// PATCH /api/attendances/:id   body: { status, reason }   (dueño o Admin)
-function updateAttendance(req, res) {
+// GET /api/attendances/:id
+function getAttendance(req, res) {
     requireSquadAccess(req);
-    const id = toId(req.params.id);
-    const att = id && Attendances.findById(id);
-    if (!att) throw notFound('Attendance not found');
-
-    // Comprobación de "dueño": compara el jugador de la fila con el jugador del token.
-    const isAdmin = req.user.role === 'admin';
-    if (!isAdmin && att.player_id !== req.user.playerId) throw new HttpError(403, 'This attendance is not yours');
-
-    const { status, reason } = requireBody(req);
-    if (!STATUSES.includes(status)) throw badRequest(`status is required and must be one of: ${STATUSES.join(', ')}`);
-    if (!isAdmin) {
-        if (status === 'injured') throw new HttpError(403, 'Only an admin can mark a player as injured');
-        if (status === 'pending') throw badRequest('A player may send only confirmed or absent');
-    }
-    if (reason !== undefined && reason !== null && (typeof reason !== 'string' || reason.length > 300))
-        throw badRequest('reason must be a text of at most 300 characters');
-    if (status === 'absent' && (typeof reason !== 'string' || reason.trim() === ''))
-        throw badRequest('reason is required when status is absent');
-
-    // Un jugador no puede cambiar su asistencia cuando la sesión ya ha empezado (el admin sí, para corregir)
-    if (!isAdmin) {
-        const now = new Date();
-        const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-        if (`${att.session_date}T${att.start_time}` <= nowStr) throw conflict('The session has already started');
-    }
-
-    const cleanReason = status === 'absent' || status === 'injured' ? (reason?.trim() || null) : null;
-    Attendances.update(id, status, cleanReason);
-    res.json(mapAttendance(Attendances.findById(id)));
+    res.json(mapAttendance(findOr404(req)));
 }
 
-module.exports = { listAttendances, updateAttendance };
+// POST /api/attendances  (admin: p. ej. un jugador nuevo que se apunta a una sesión ya creada)
+function createAttendance(req, res) {
+    const data = validateBody(req.body);
+    if (store.attendances.findBySessionAndPlayer(data.sessionId, data.playerId))
+        throw conflict('This player already has an attendance for this session');
+    const id = store.attendances.create(data);
+    res.status(201).location(`/api/attendances/${id}`).json(mapAttendance(store.attendances.findById(id)));
+}
+
+// PUT /api/attendances/:id
+function replaceAttendance(req, res) {
+    requireSquadAccess(req);
+    const current = findOr404(req);
+    const data = validateBody(req.body);
+
+    if (req.user.role !== 'admin') {
+        if (data.sessionId !== current.session_id || data.playerId !== current.player_id)
+            throw forbidden('A player can only change status and reason');
+        if (!['confirmed', 'absent'].includes(data.status)) throw forbidden('A player may only send confirmed or absent');
+        if (`${current.session_date}T${current.start_time}` <= nowStr()) throw conflict('The session has already started');
+    } else {
+        const other = store.attendances.findBySessionAndPlayer(data.sessionId, data.playerId);
+        if (other && other.attendance_id !== current.attendance_id)
+            throw conflict('This player already has an attendance for this session');
+    }
+
+    store.attendances.replace(current.attendance_id, data);
+    res.json(mapAttendance(store.attendances.findById(current.attendance_id)));
+}
+
+// DELETE /api/attendances/:id  (admin)
+function deleteAttendance(req, res) {
+    const current = findOr404(req);
+    store.attendances.remove(current.attendance_id);
+    res.status(204).end();
+}
+
+module.exports = { listAttendances, getAttendance, createAttendance, replaceAttendance, deleteAttendance };
