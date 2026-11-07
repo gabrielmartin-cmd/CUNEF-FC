@@ -1,19 +1,19 @@
-// data.js — datos de ejemplo EN MEMORIA. De momento hacen el papel de la base de datos.
+// seed.js — datos de ejemplo EN MEMORIA (antes src/data.js). De momento hacen el papel de la base de datos.
 //
 // Cada array es una "tabla" y cada objeto es una "fila". Los nombres de las propiedades
 // (player_id, player_name, team_id...) son los mismos que tendrán las columnas de la futura BD,
-// así el día que la añadamos solo cambian los archivos de src/models/ (los controladores no).
+// así el día que la añadamos solo cambian los archivos de src/data/models/ (los controladores no).
 //
 // IMPORTANTE: al estar en memoria, todo lo que se cambie desde la web (noticias nuevas, cuentas
 // de fan, estadísticas...) se PIERDE al reiniciar el servidor. "npm start" usa node --watch,
 // que reinicia el servidor cada vez que guardas un archivo: los datos vuelven a ser estos.
 //
 // Para cambiar los datos de ejemplo: edita estos arrays y guarda.
-// Solo src/models/*.js debe leer o modificar estos arrays (nunca los controladores).
+// Solo src/data/models/*.js debe leer o modificar estos arrays (nunca los controladores).
 
 const bcrypt = require('bcryptjs');
-const { OWN_TEAM_ID } = require('./config');
-const { todayStr } = require('./utils');
+const { OWN_TEAM_ID } = require('../config');
+const { todayStr } = require('../utils');
 
 const PASSWORD = 'cunef2026';   // SOLO desarrollo: contraseña de todos los usuarios de ejemplo
 
@@ -36,9 +36,9 @@ const teams = [
 ];
 
 // ---- players (todos de CUNEF FC). position: goalkeeper | defender | fullback | midfielder | forward
-//      status: available | injured · height en cm · weight en kg · dob = fecha de nacimiento
+//      injured: true/false (en la lista de abajo se escribe 'available' o 'injured' para que se lea mejor) · height en cm · weight en kg · dob = fecha de nacimiento
 const p = (player_id, player_name, shirt_number, position, dob, height, weight, goals, assists, appearances, status, description) =>
-    ({ player_id, player_name, shirt_number, position, dob, height, weight, goals, assists, appearances, status, description, team_id: OWN_TEAM_ID });
+    ({ player_id, player_name, shirt_number, position, dob, height, weight, goals, assists, appearances, injured: status === 'injured', description, team_id: OWN_TEAM_ID });
 const players = [
     p(1, 'Antony', 1, 'goalkeeper', '2008-03-14', 186, 80, 0, 0, 9, 'available', 'An exceptional goalkeeper known for his shot-stopping ability and clutch performances.'),
     p(2, 'Rubén', 13, 'goalkeeper', '2006-07-02', 183, 77, 0, 0, 1, 'available', 'Reliable second goalkeeper with great command of the area.'),
@@ -118,7 +118,7 @@ const attendances = [];
 for (const session of trainingSessions) {
     for (const player of players) {
         let status = 'pending', reason = null;
-        if (session.session_id === 1) status = player.status === 'injured' ? 'injured' : 'confirmed';  // sesión pasada: ya resuelta
+        if (session.session_id === 1) status = player.injured ? 'injured' : 'confirmed';  // sesión pasada: ya resuelta
         if (session.session_id === 2) {                                                                // un poco de variedad en la próxima
             if (['Capi', 'Gabo', 'Sergio', 'Nico'].includes(player.player_name)) status = 'confirmed';
             if (player.player_name === 'Leo') { status = 'absent'; reason = 'Exam on Friday morning'; }

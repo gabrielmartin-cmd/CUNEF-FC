@@ -1,7 +1,7 @@
-// models/users.js — acceso a los datos de los usuarios (ver la explicación en models/teams.js).
+// models/users.js — usuarios para el login y el registro (no es uno de los 6 recursos con CRUD).
 
-const data = require('../data');
-const { nextId } = require('../utils');
+const data = require('../seed');
+const { nextId } = require('../../utils');
 
 // SQL: SELECT * FROM users WHERE email = ?
 // (en la BD la columna email será COLLATE NOCASE: no distingue mayúsculas; aquí lo imitamos con toLowerCase)

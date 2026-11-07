@@ -1,8 +1,8 @@
 // models/standings.js — clasificación calculada a partir de los partidos jugados (3-1-0).
 // No es una "tabla": se calcula cada vez con los datos de teams y matches.
 
-const data = require('../data');
-const { byColumns } = require('../utils');
+const data = require('../seed');
+const { byColumns } = require('../../utils');
 
 // SQL: WITH results AS (
 //          SELECT home_team_id AS team_id, home_goals AS gf, away_goals AS ga FROM matches WHERE home_goals IS NOT NULL

@@ -1,18 +1,23 @@
-// models/teams.js — acceso a los datos de los equipos.
-//
-// Los "modelos" son la ÚNICA parte de la app que sabe dónde están guardados los datos.
-// Hoy leen y modifican los arrays de data.js. Cuando haya base de datos, se reescribe el
-// cuerpo de cada función con la consulta SQL que tiene encima en el comentario y el resto
-// de la app (rutas, controladores, frontend) no cambia.
-// Devuelven filas con los nombres de columna de la BD (team_id, name...); los controladores
-// las convierten al formato de la API.
+// models/teams.js — lee y modifica data.teams.
+const data = require('../seed');
+const { byColumns, nextId, removeWhere } = require('../../utils');
 
-const data = require('../data');
+const toRow = (d) => ({ name: d.name, stadium: d.stadium, creation_date: d.creationDate });
 
-// SQL: SELECT * FROM teams WHERE team_id = ?
+const list = () => [...data.teams].sort(byColumns(['name', 'ASC']));     // [...] copia: no desordenar data.teams
+
 const findById = (id) => data.teams.find((t) => t.team_id === id);
 
-// SQL: SELECT * FROM teams
-const findAll = () => data.teams;
+function create(d) {
+    const row = { team_id: nextId(data.teams, 'team_id'), ...toRow(d) };
+    data.teams.push(row);
+    return row.team_id;
+}
 
-module.exports = { findById, findAll };
+function replace(id, d) {
+    Object.assign(findById(id), toRow(d));
+}
+
+const remove = (id) => removeWhere(data.teams, (t) => t.team_id === id) > 0;
+
+module.exports = { list, findById, create, replace, remove };
