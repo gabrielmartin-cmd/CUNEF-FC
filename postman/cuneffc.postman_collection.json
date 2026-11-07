@@ -1,0 +1,175 @@
+{
+  "info": {
+    "_postman_id": "6f1c2a8e-3b7d-4c55-9a1e-0c0ef0fc0001",
+    "name": "CUNEF FC — Practice 1",
+    "description": "Run in order against a freshly started server (npm start). The first request logs in as admin and stores the token; every other request sends it as a Bearer token. The CRUD of the main resource (players) creates a player and reuses its id.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "playerId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "0. Login as admin (saves token)",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('200 OK', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('token', pm.response.json().token);"
+          ]
+        }
+      }],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@cunef.edu\",\n  \"password\": \"cunef2026\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "1. List players",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200 + array', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.be.an('array'); });"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/players", "host": ["{{baseUrl}}"], "path": ["players"] }
+      }
+    },
+    {
+      "name": "2. Create player",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('201 + Location', () => { pm.response.to.have.status(201); pm.response.to.have.header('Location'); });",
+        "pm.test('client id ignored', () => pm.expect(pm.response.json().id).to.not.eql(999));",
+        "pm.collectionVariables.set('playerId', pm.response.json().id);"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"id\": 999,\n  \"name\": \"Lucas\",\n  \"shirtNumber\": 23,\n  \"position\": \"midfielder\",\n  \"dob\": \"2006-04-10\",\n  \"height\": 178,\n  \"weight\": 70,\n  \"goals\": 0,\n  \"assists\": 0,\n  \"appearances\": 0,\n  \"injured\": false,\n  \"description\": \"New signing from the academy.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/players", "host": ["{{baseUrl}}"], "path": ["players"] }
+      }
+    },
+    {
+      "name": "3. Get the new player",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200', () => pm.response.to.have.status(200));",
+        "pm.test('same name', () => pm.expect(pm.response.json().name).to.eql('Lucas'));"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/players/{{playerId}}", "host": ["{{baseUrl}}"], "path": ["players", "{{playerId}}"] }
+      }
+    },
+    {
+      "name": "4. Replace the new player (PUT)",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200', () => pm.response.to.have.status(200));",
+        "pm.test('goals updated', () => pm.expect(pm.response.json().goals).to.eql(2));"
+      ] } }],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Lucas\",\n  \"shirtNumber\": 23,\n  \"position\": \"forward\",\n  \"dob\": \"2006-04-10\",\n  \"height\": 178,\n  \"weight\": 71,\n  \"goals\": 2,\n  \"assists\": 1,\n  \"appearances\": 3,\n  \"injured\": false,\n  \"description\": \"Moved up front.\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/players/{{playerId}}", "host": ["{{baseUrl}}"], "path": ["players", "{{playerId}}"] }
+      }
+    },
+    {
+      "name": "5. Delete the new player",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('204', () => pm.response.to.have.status(204));"
+      ] } }],
+      "request": {
+        "method": "DELETE", "header": [],
+        "url": { "raw": "{{baseUrl}}/players/{{playerId}}", "host": ["{{baseUrl}}"], "path": ["players", "{{playerId}}"] }
+      }
+    },
+    {
+      "name": "6. Get deleted player -> 404",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('404 JSON', () => { pm.response.to.have.status(404); pm.expect(pm.response.json()).to.have.property('error'); });"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/players/{{playerId}}", "host": ["{{baseUrl}}"], "path": ["players", "{{playerId}}"] }
+      }
+    },
+    {
+      "name": "7. Invalid POST -> 400 with every error",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('400', () => pm.response.to.have.status(400));",
+        "pm.test('errors array with field + message', () => {",
+        "  const errors = pm.response.json().errors;",
+        "  pm.expect(errors).to.be.an('array').that.is.not.empty;",
+        "  pm.expect(errors[0]).to.have.keys('field', 'message');",
+        "});"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"\",\n  \"shirtNumber\": 150,\n  \"position\": \"striker\",\n  \"injured\": \"yes\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/players", "host": ["{{baseUrl}}"], "path": ["players"] }
+      }
+    },
+    {
+      "name": "8. Filter: search + position + injured",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200 + only available forwards matching \"a\"', () => {",
+        "  pm.response.to.have.status(200);",
+        "  pm.response.json().forEach((p) => { pm.expect(p.position).to.eql('forward'); pm.expect(p.injured).to.eql(false); pm.expect(p.name.toLowerCase()).to.include('a'); });",
+        "});"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/players?search=A&position=forward&injured=false",
+          "host": ["{{baseUrl}}"], "path": ["players"],
+          "query": [
+            { "key": "search", "value": "A" },
+            { "key": "position", "value": "forward" },
+            { "key": "injured", "value": "false" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. Filter with invalid value -> 400",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('400 with field position', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().errors[0].field).to.eql('position'); });"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/players?position=striker", "host": ["{{baseUrl}}"], "path": ["players"], "query": [{ "key": "position", "value": "striker" }] }
+      }
+    },
+    {
+      "name": "10. Stats",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('200 + summary', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.have.property('byPosition'); });"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/players/stats", "host": ["{{baseUrl}}"], "path": ["players", "stats"] }
+      }
+    },
+    {
+      "name": "11. Unknown route -> JSON 404",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('404 JSON', () => { pm.response.to.have.status(404); pm.response.to.be.json; });"
+      ] } }],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/does-not-exist", "host": ["{{baseUrl}}"], "path": ["does-not-exist"] }
+      }
+    }
+  ]
+}

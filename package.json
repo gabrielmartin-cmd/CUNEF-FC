@@ -1,30 +1,31 @@
 {
   "//": [
     "JSON no admite comentarios: esta clave \"//\" es la convención de npm para documentar el archivo y npm la ignora.",
-    "name / version: identifican el paquete; los generó npm init -y.",
-    "scripts.start: \"npm start\" ejecuta src/server.js con node --watch, que reinicia el servidor cada vez que guardamos un archivo.",
-    "scripts.test: placeholder de npm init; aún no hay tests.",
-    "repository / bugs / homepage: enlaces al repositorio de GitHub del proyecto.",
+    "scripts.start: \"npm start\" arranca el servidor (src/server.js) en http://localhost:3000.",
+    "scripts.dev: igual que start pero con node --watch, que reinicia el servidor al guardar un archivo (OJO: los datos en memoria vuelven a los de ejemplo).",
+    "scripts.test: \"npm test\" ejecuta scripts/smoke-test.js, que arranca la app en un puerto libre y lanza peticiones reales a la API.",
     "type: \"commonjs\" indica que usamos require/module.exports (no import/export).",
-    "dependencies: paquetes necesarios para ejecutar la app; express lo añadió npm install express. El ^ permite actualizaciones menores (5.x).",
-    "scripts.test: \"npm test\" ejecuta scripts/smoke-test.js, que lanza peticiones reales a la API con los datos de ejemplo de src/data.js.",
-    "dependencies (nuevas): bcryptjs (hash de contraseñas) y jsonwebtoken (tokens JWT de sesión)."
+    "dependencies: express (servidor), bcryptjs (hash de contraseñas) y jsonwebtoken (tokens JWT de sesión)."
   ],
-  "name": "repo_cunef_fc",
+  "name": "cunef-fc",
   "version": "1.0.0",
-  "description": "",
+  "description": "CUNEF FC — Practice 1 (Foundations API): Express REST API + vanilla front end",
+  "main": "src/server.js",
   "scripts": {
-    "test": "node scripts/smoke-test.js",
-    "start": "node --watch src/server.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node scripts/smoke-test.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gabrielmartin-cmd/CUNEF-FC.git"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Gabriel Martín Jiménez, Antonio García Vicente",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
   "bugs": {
     "url": "https://github.com/gabrielmartin-cmd/CUNEF-FC/issues"
   },
