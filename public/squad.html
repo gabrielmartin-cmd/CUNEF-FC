@@ -48,17 +48,22 @@
             </div>
         </section>
 
-        <!-- Players (GET /api/players) -->
+        <!-- Players: search + filters run ON THE SERVER (GET /api/players?search=&position=&injured=&sort=) -->
         <section class="section" aria-labelledby="players-title">
             <div class="container">
                 <header class="section__header">
                     <p class="eyebrow">The players</p>
                     <h2 id="players-title">Our warriors</h2>
                 </header>
-                <div class="toolbar">
+                <form id="player-filters" class="toolbar" role="search">
+                    <div class="toolbar__group">
+                        <label for="search-input">Search</label>
+                        <input type="search" id="search-input" name="search" maxlength="50" placeholder="Player name…">
+                    </div>
                     <div class="toolbar__group">
                         <label for="position-filter">Position</label>
-                        <select id="position-filter">
+                        <!-- Same values as POSITIONS in src/validators/playerValidator.js -->
+                        <select id="position-filter" name="position">
                             <option value="">All</option>
                             <option value="goalkeeper">Goalkeepers</option>
                             <option value="defender">Defenders</option>
@@ -68,27 +73,38 @@
                         </select>
                     </div>
                     <div class="toolbar__group">
+                        <label for="injured-filter">Fitness</label>
+                        <select id="injured-filter" name="injured">
+                            <option value="">All</option>
+                            <option value="false">Available</option>
+                            <option value="true">Injured</option>
+                        </select>
+                    </div>
+                    <div class="toolbar__group">
                         <label for="sort-select">Sort by</label>
-                        <select id="sort-select">
+                        <select id="sort-select" name="sort">
                             <option value="name">Name</option>
+                            <option value="shirtNumber">Shirt number</option>
                             <option value="-goals">Goals</option>
                             <option value="-assists">Assists</option>
                             <option value="-appearances">Appearances</option>
                         </select>
                     </div>
-                </div>
+                    <button type="button" id="new-player" data-roles="admin" hidden>New player</button>
+                </form>
                 <p id="squad-status" class="status" role="status">Loading players…</p>
                 <div class="card-grid" id="players-grid"></div>
             </div>
         </section>
 
-        <!-- Season leaders -->
-        <section class="section" aria-labelledby="stats-title">
+        <!-- Squad stats (GET /api/players/stats, computed by the server on every request) -->
+        <section class="section" aria-labelledby="leaders-title">
             <div class="container">
                 <header class="section__header">
                     <p class="eyebrow">This season</p>
-                    <h2 id="stats-title">Top player stats</h2>
+                    <h2 id="leaders-title">Top player stats</h2>
                 </header>
+                <p id="leaders-status" class="status" role="status">Loading stats…</p>
                 <div class="card-grid" id="leaders-grid"></div>
             </div>
         </section>
@@ -105,26 +121,73 @@
         </section>
     </main>
 
-    <!-- Admin: edit a player's stats (PATCH /api/players/:id) -->
-    <dialog id="stats-dialog" class="dialog dialog--narrow" aria-labelledby="stats-title">
-        <form id="stats-form" class="dialog__body" novalidate>
-            <h2 id="stats-title" class="dialog__title">Edit stats</h2>
-            <div class="field">
-                <label for="stats-goals">Goals</label>
-                <input type="number" id="stats-goals" name="goals" min="0" step="1" required>
+    <!-- Admin: create (POST /api/players) or edit (PUT /api/players/:id) a player.
+         The min/max/maxlength attributes are the same rules as src/validators/playerValidator.js -->
+    <dialog id="player-dialog" class="dialog" aria-labelledby="player-dialog-title">
+        <form id="player-form" class="dialog__body" novalidate>
+            <h2 id="player-dialog-title" class="dialog__title">New player</h2>
+            <div class="field-row">
+                <div class="field">
+                    <label for="p-name">Name</label>
+                    <input type="text" id="p-name" name="name" maxlength="50" required>
+                </div>
+                <div class="field">
+                    <label for="p-number">Shirt number</label>
+                    <input type="number" id="p-number" name="shirtNumber" min="1" max="99" step="1" required>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="p-position">Position</label>
+                    <select id="p-position" name="position" required>
+                        <option value="goalkeeper">Goalkeeper</option>
+                        <option value="defender">Defender</option>
+                        <option value="fullback">Fullback</option>
+                        <option value="midfielder">Midfielder</option>
+                        <option value="forward">Forward</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="p-dob">Date of birth</label>
+                    <input type="date" id="p-dob" name="dob" required>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="p-height">Height (cm)</label>
+                    <input type="number" id="p-height" name="height" min="140" max="220" step="1" required>
+                </div>
+                <div class="field">
+                    <label for="p-weight">Weight (kg)</label>
+                    <input type="number" id="p-weight" name="weight" min="40" max="150" step="1" required>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="p-goals">Goals</label>
+                    <input type="number" id="p-goals" name="goals" min="0" max="500" step="1" required>
+                </div>
+                <div class="field">
+                    <label for="p-assists">Assists</label>
+                    <input type="number" id="p-assists" name="assists" min="0" max="500" step="1" required>
+                </div>
+                <div class="field">
+                    <label for="p-apps">Appearances</label>
+                    <input type="number" id="p-apps" name="appearances" min="0" max="500" step="1" required>
+                </div>
             </div>
             <div class="field">
-                <label for="stats-assists">Assists</label>
-                <input type="number" id="stats-assists" name="assists" min="0" step="1" required>
+                <label for="p-description">Description</label>
+                <textarea id="p-description" name="description" maxlength="300"></textarea>
             </div>
-            <div class="field">
-                <label for="stats-appearances">Appearances</label>
-                <input type="number" id="stats-appearances" name="appearances" min="0" step="1" required>
+            <div class="field field--check">
+                <input type="checkbox" id="p-injured" name="injured">
+                <label for="p-injured">Injured</label>
             </div>
-            <p id="stats-error" class="form__error" role="alert" hidden></p>
+            <p class="form__error" data-form-error role="alert" hidden></p>
             <div class="dialog__actions">
-                <button type="button" id="stats-cancel" class="btn--outline">Cancel</button>
-                <button type="submit">Save stats</button>
+                <button type="button" data-close class="btn--outline">Cancel</button>
+                <button type="submit">Save player</button>
             </div>
         </form>
     </dialog>
@@ -147,6 +210,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/squad.js" defer></script>
 </body>
 

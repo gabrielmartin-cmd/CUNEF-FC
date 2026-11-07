@@ -1,106 +1,160 @@
-/* Squad: jugadores, líderes de la temporada y edición de estadísticas (admin) */
+/* squad.js — página Squad (recurso PRINCIPAL: players).
+   GET    /api/players?search=&position=&injured=&sort=   lista filtrada EN EL SERVIDOR
+   GET    /api/players/stats                              líderes de la temporada
+   POST   /api/players · PUT /api/players/:id · DELETE /api/players/:id   (admin) */
 (function () {
     'use strict';
-    const { api, auth, esc, capitalize, setStatus, errorMessage } = CUNEF;
 
     const grid = document.getElementById('players-grid');
     const statusEl = document.getElementById('squad-status');
-    const leaders = document.getElementById('leaders-grid');
-    const positionFilter = document.getElementById('position-filter');
-    const sortSelect = document.getElementById('sort-select');
-    const dialog = document.getElementById('stats-dialog');
-    const form = document.getElementById('stats-form');
-    const dialogError = document.getElementById('stats-error');
+    const filters = document.getElementById('player-filters');
+    const leadersGrid = document.getElementById('leaders-grid');
+    const leadersStatus = document.getElementById('leaders-status');
+    const dialog = document.getElementById('player-dialog');
+    const form = document.getElementById('player-form');
+    const isAdmin = () => auth.role === 'admin';
     let players = [];
-    let editingId = null;
+    let editingId = null;          // null = creando, número = editando ese jugador
+
+    // ---------- Pintar una tarjeta (createElement + textContent, nunca innerHTML) ----------
+    function detail(term, value) {
+        return el('div', { className: 'details__row' }, el('dt', {}, term), el('dd', {}, value ?? '–'));
+    }
 
     function playerCard(p) {
-        const isAdmin = auth.role === 'admin';
-        return `
-        <article class="player-card card">
-            <span class="player-card__number" aria-hidden="true">${esc(p.shirtNumber ?? '')}</span>
-            <span class="player-card__position badge">${esc(capitalize(p.position))}</span>
-            <h3>${esc(p.name)} ${p.status === 'injured' ? '<span class="badge badge--injured">Injured</span>' : ''}</h3>
-            ${p.description ? `<p class="card__text">${esc(p.description)}</p>` : ''}
-            <dl class="details">
-                <div class="details__row"><dt>Number</dt><dd>${esc(p.shirtNumber ?? '–')}</dd></div>
-                <div class="details__row"><dt>Age</dt><dd>${esc(p.age ?? '–')}</dd></div>
-                <div class="details__row"><dt>Goals</dt><dd>${p.stats.goals}</dd></div>
-                <div class="details__row"><dt>Assists</dt><dd>${p.stats.assists}</dd></div>
-                <div class="details__row"><dt>Appearances</dt><dd>${p.stats.appearances}</dd></div>
-            </dl>
-            ${isAdmin ? `<div class="card__actions"><button type="button" class="btn--outline btn--small" data-edit="${p.id}">Edit stats</button></div>` : ''}
-        </article>`;
+        return el('article', { className: 'player-card card' },
+            el('span', { className: 'player-card__number', attrs: { 'aria-hidden': 'true' } }, p.shirtNumber),
+            el('span', { className: 'player-card__position badge' }, capitalize(p.position)),
+            el('h3', {}, p.name, p.injured && ' ', p.injured && el('span', { className: 'badge badge--injured' }, 'Injured')),
+            p.description && el('p', { className: 'card__text' }, p.description),
+            el('dl', { className: 'details' },
+                detail('Number', p.shirtNumber),
+                detail('Age', p.age),
+                detail('Goals', p.goals),
+                detail('Assists', p.assists),
+                detail('Appearances', p.appearances)),
+            isAdmin() && el('div', { className: 'card__actions' },
+                el('button', { type: 'button', className: 'btn--outline btn--small', dataset: { edit: p.id } }, 'Edit'),
+                el('button', { type: 'button', className: 'btn--danger btn--small', dataset: { delete: p.id } }, 'Delete')));
     }
 
+    // ---------- Lista: el query string se monta con los filtros; filtra el servidor ----------
     async function loadPlayers() {
-        setStatus(statusEl, 'Loading players…');
+        const f = filters.elements;
+        const path = '/api/players' + query({
+            search: f.search.value.trim(), position: f.position.value, injured: f.injured.value, sort: f.sort.value
+        });
+        players = (await loadList({
+            container: grid, statusEl, loading: 'Loading players…', empty: 'No players match your search.',
+            request: () => apiRequest('GET', path), render: playerCard
+        })) || [];
+    }
+
+    // ---------- Stats: GET /api/players/stats ----------
+    function statCard(title, leader, unit) {
+        return el('article', { className: 'stat-card card' },
+            el('h3', {}, title),
+            el('p', { className: 'stat-card__value' }, leader ? leader.value : 0, el('span', {}, unit)),
+            el('p', { className: 'stat-card__player' }, leader ? leader.name : '–'));
+    }
+
+    async function loadStats() {
+        setStatus(leadersStatus, 'Loading stats…');
         try {
-            const res = await api.get('/api/players', { position: positionFilter.value, sort: sortSelect.value, limit: 100 });
-            players = res.data;
-            grid.innerHTML = players.map(playerCard).join('');
-            setStatus(statusEl, players.length ? '' : 'No players found.');
+            const s = await apiRequest('GET', '/api/players/stats');
+            leadersGrid.replaceChildren(
+                statCard('Top scorer', s.leaders.goals, 'goals'),
+                statCard('Most assists', s.leaders.assists, 'assists'),
+                statCard('Most appearances', s.leaders.appearances, 'matches'),
+                el('article', { className: 'stat-card card' },
+                    el('h3', {}, 'Squad'),
+                    el('p', { className: 'stat-card__value' }, s.total, el('span', {}, 'players')),
+                    el('p', { className: 'stat-card__player' }, `${s.available} available · ${s.injured} injured · avg. age ${s.averageAge}`)));
+            setStatus(leadersStatus, s.total ? '' : 'No players yet.');
         } catch (err) {
-            grid.innerHTML = '';
-            setStatus(statusEl, errorMessage(err), 'error');
+            leadersGrid.replaceChildren();
+            setStatus(leadersStatus, err.message, 'error');
         }
     }
 
-    // Tres peticiones: el primero de la lista ordenada por goles / asistencias / partidos
-    async function loadLeaders() {
-        const defs = [
-            ['Top scorer', '-goals', 'goals', 'goals'],
-            ['Most assists', '-assists', 'assists', 'assists'],
-            ['Most appearances', '-appearances', 'appearances', 'matches']
-        ];
-        try {
-            const results = await Promise.all(defs.map(([, sort]) => api.get('/api/players', { sort, limit: 1 })));
-            leaders.innerHTML = defs.map(([title, , key, unit], i) => {
-                const p = results[i].data[0];
-                return p ? `
-                <article class="stat-card card">
-                    <h3>${title}</h3>
-                    <p class="stat-card__value">${p.stats[key]}<span>${unit}</span></p>
-                    <p class="stat-card__player">${esc(p.name)}</p>
-                </article>` : '';
-            }).join('');
-        } catch {
-            leaders.innerHTML = '<p class="status status--error">Season leaders are not available right now.</p>';
-        }
-    }
+    // Esperamos 300 ms después de la última tecla para no pedir al servidor en cada letra.
+    let searchTimer;
+    filters.addEventListener('input', (e) => {
+        if (e.target.name !== 'search') return;
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(loadPlayers, 300);
+    });
+    filters.addEventListener('change', (e) => { if (e.target.tagName === 'SELECT') loadPlayers(); });
+    filters.addEventListener('submit', (e) => { e.preventDefault(); loadPlayers(); });
 
-    // ----- Admin: editar estadísticas (PATCH /api/players/:id)
-    grid.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-edit]');
-        if (!btn) return;
-        const p = players.find((x) => x.id === Number(btn.dataset.edit));
-        if (!p) return;
-        editingId = p.id;
-        document.getElementById('stats-title').textContent = `Edit stats — ${p.name}`;
-        form.elements.goals.value = p.stats.goals;
-        form.elements.assists.value = p.stats.assists;
-        form.elements.appearances.value = p.stats.appearances;
-        setStatus(dialogError, '');
+    // ---------- Admin: crear / editar ----------
+    function openDialog(player) {
+        editingId = player ? player.id : null;
+        form.reset();
+        clearFormErrors(form);
+        document.getElementById('player-dialog-title').textContent = player ? `Edit — ${player.name}` : 'New player';
+        if (player) {
+            for (const name of ['name', 'shirtNumber', 'position', 'dob', 'height', 'weight', 'goals', 'assists', 'appearances'])
+                form.elements[name].value = player[name];
+            form.elements.description.value = player.description || '';
+            form.elements.injured.checked = player.injured;
+        } else {
+            for (const name of ['goals', 'assists', 'appearances']) form.elements[name].value = 0;
+        }
         dialog.showModal();
+    }
+
+    function formBody() {
+        const f = form.elements;
+        return {
+            name: f.name.value.trim(),
+            shirtNumber: numberOrNull(f.shirtNumber),
+            position: f.position.value,
+            dob: f.dob.value,
+            height: numberOrNull(f.height),
+            weight: numberOrNull(f.weight),
+            goals: numberOrNull(f.goals),
+            assists: numberOrNull(f.assists),
+            appearances: numberOrNull(f.appearances),
+            injured: f.injured.checked,
+            description: f.description.value.trim() || null
+        };
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        submitForm(form, {
+            extraCheck: () => (form.elements.dob.value && form.elements.dob.value >= toDateStr(new Date())
+                ? [{ field: 'dob', message: 'Date of birth must be in the past' }] : []),
+            request: () => (editingId
+                ? apiRequest('PUT', `/api/players/${editingId}`, formBody())
+                : apiRequest('POST', '/api/players', formBody())),
+            onSuccess: async () => {
+                dialog.close();
+                await Promise.all([loadPlayers(), loadStats()]);      // la lista se actualiza sin recargar
+            }
+        });
     });
 
-    document.getElementById('stats-cancel').addEventListener('click', () => dialog.close());
+    dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
+    document.getElementById('new-player').addEventListener('click', () => openDialog(null));
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        setStatus(dialogError, '');
-        const stats = { goals: form.elements.goals.valueAsNumber, assists: form.elements.assists.valueAsNumber, appearances: form.elements.appearances.valueAsNumber };
+    grid.addEventListener('click', async (e) => {
+        const edit = e.target.closest('[data-edit]');
+        if (edit) return openDialog(players.find((p) => p.id === Number(edit.dataset.edit)));
+
+        const del = e.target.closest('[data-delete]');
+        if (!del) return;
+        const player = players.find((p) => p.id === Number(del.dataset.delete));
+        if (!confirm(`Delete ${player.name}? Their attendances and call-ups will be deleted too.`)) return;
         try {
-            await api.patch(`/api/players/${editingId}`, { stats });
-            dialog.close();
-            await Promise.all([loadPlayers(), loadLeaders()]);
+            await apiRequest('DELETE', `/api/players/${player.id}`);
+            await Promise.all([loadPlayers(), loadStats()]);
         } catch (err) {
-            setStatus(dialogError, errorMessage(err), 'error');
+            setStatus(statusEl, err.message, 'error');
         }
     });
 
-    positionFilter.addEventListener('change', loadPlayers);
-    sortSelect.addEventListener('change', loadPlayers);
     loadPlayers();
-    loadLeaders();
+    loadStats();
 })();

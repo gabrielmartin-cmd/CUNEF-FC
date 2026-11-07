@@ -60,7 +60,7 @@
                     <input type="password" id="password" name="password" minlength="8" autocomplete="current-password" required>
                 </div>
 
-                <p id="login-error" class="form__error" role="alert" hidden></p>
+                <p class="form__error" data-form-error role="alert" hidden></p>
                 <button class="btn--block" type="submit">Sign in</button>
                 <p class="form__switch">New here? <button type="button" class="link-button" id="show-signup">Create an account</button></p>
             </form>
@@ -85,11 +85,11 @@
 
                 <div class="field">
                     <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" name="password" minlength="8" autocomplete="new-password" aria-describedby="signup-hint" required>
+                    <input type="password" id="signup-password" name="password" minlength="8" maxlength="72" autocomplete="new-password" aria-describedby="signup-hint" required>
                     <p class="field__hint" id="signup-hint">At least 8 characters.</p>
                 </div>
 
-                <p id="signup-error" class="form__error" role="alert" hidden></p>
+                <p class="form__error" data-form-error role="alert" hidden></p>
                 <button class="btn--block" type="submit">Create account</button>
                 <p class="form__switch">Already have an account? <button type="button" class="link-button" id="show-login">Sign in</button></p>
             </form>
@@ -114,6 +114,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/login.js" defer></script>
 </body>
 

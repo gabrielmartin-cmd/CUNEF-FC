@@ -55,6 +55,9 @@
                     <p class="eyebrow">Don't miss it</p>
                     <h2 id="fixtures-title">Upcoming matches</h2>
                 </header>
+                <div class="toolbar">
+                    <button type="button" id="new-match" data-roles="admin" hidden>New match</button>
+                </div>
                 <p id="fixtures-status" class="status" role="status">Loading fixtures…</p>
                 <div class="card-grid" id="fixtures-grid"></div>
             </div>
@@ -101,9 +104,107 @@
                 </div>
             </div>
         </section>
+
+        <!-- Teams of the league (GET /api/teams; admin: POST / PUT / DELETE) -->
+        <section class="section" aria-labelledby="teams-title">
+            <div class="container">
+                <header class="section__header">
+                    <p class="eyebrow">The league</p>
+                    <h2 id="teams-title">Teams</h2>
+                </header>
+                <div class="toolbar">
+                    <button type="button" id="new-team" data-roles="admin" hidden>New team</button>
+                </div>
+                <p id="teams-status" class="status" role="status">Loading teams…</p>
+                <div class="table-wrap" role="region" aria-labelledby="teams-title" tabindex="0">
+                    <table class="simple-table">
+                        <thead>
+                            <tr><th scope="col">Team</th><th scope="col">Stadium</th><th scope="col">Founded</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+                        </thead>
+                        <tbody id="teams-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Admin: choose, save and publish a call-up (PUT /api/matches/:id/callup, PATCH /api/matches/:id) -->
+    <!-- Admin: create / edit a match (POST /api/matches, PUT /api/matches/:id).
+         Same rules as src/validators/matchValidator.js. Team lists are filled from GET /api/teams. -->
+    <dialog id="match-dialog" class="dialog" aria-labelledby="match-dialog-title">
+        <form id="match-form" class="dialog__body" novalidate>
+            <h2 id="match-dialog-title" class="dialog__title">New match</h2>
+            <div class="field-row">
+                <div class="field">
+                    <label for="m-home">Home team</label>
+                    <select id="m-home" name="homeTeamId" required></select>
+                </div>
+                <div class="field">
+                    <label for="m-away">Away team</label>
+                    <select id="m-away" name="awayTeamId" required></select>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="m-date">Date</label>
+                    <input type="date" id="m-date" name="date" required>
+                </div>
+                <div class="field">
+                    <label for="m-time">Kick-off</label>
+                    <input type="time" id="m-time" name="time" required>
+                </div>
+            </div>
+            <div class="field">
+                <label for="m-location">Location</label>
+                <input type="text" id="m-location" name="location" maxlength="100" required>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="m-home-goals">Home goals</label>
+                    <input type="number" id="m-home-goals" name="homeGoals" min="0" max="50" step="1" aria-describedby="m-goals-hint">
+                </div>
+                <div class="field">
+                    <label for="m-away-goals">Away goals</label>
+                    <input type="number" id="m-away-goals" name="awayGoals" min="0" max="50" step="1" aria-describedby="m-goals-hint">
+                </div>
+            </div>
+            <p class="field__hint" id="m-goals-hint">Leave both goals empty for an upcoming match.</p>
+            <div class="field field--check">
+                <input type="checkbox" id="m-published" name="callupPublished">
+                <label for="m-published">Call-up published</label>
+            </div>
+            <p class="form__error" data-form-error role="alert" hidden></p>
+            <div class="dialog__actions">
+                <button type="button" data-close class="btn--outline">Cancel</button>
+                <button type="submit">Save match</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Admin: create / edit a team (POST /api/teams, PUT /api/teams/:id) -->
+    <dialog id="team-dialog" class="dialog dialog--narrow" aria-labelledby="team-dialog-title">
+        <form id="team-form" class="dialog__body" novalidate>
+            <h2 id="team-dialog-title" class="dialog__title">New team</h2>
+            <div class="field">
+                <label for="t-name">Name</label>
+                <input type="text" id="t-name" name="name" maxlength="60" required>
+            </div>
+            <div class="field">
+                <label for="t-stadium">Stadium</label>
+                <input type="text" id="t-stadium" name="stadium" maxlength="100" required>
+            </div>
+            <div class="field">
+                <label for="t-created">Founded on</label>
+                <input type="date" id="t-created" name="creationDate" required>
+            </div>
+            <p class="form__error" data-form-error role="alert" hidden></p>
+            <div class="dialog__actions">
+                <button type="button" data-close class="btn--outline">Cancel</button>
+                <button type="submit">Save team</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Admin: choose, save and publish a call-up (PUT /api/matches/:id/callup, PUT /api/matches/:id) -->
     <dialog id="callup-dialog" class="dialog" aria-labelledby="callup-title">
         <div class="dialog__body">
             <h2 id="callup-title" class="dialog__title">Call-up</h2>
@@ -142,6 +243,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/season.js" defer></script>
 </body>
 

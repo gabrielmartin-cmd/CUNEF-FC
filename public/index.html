@@ -105,6 +105,19 @@
             </div>
         </section>
 
+        <!-- Squad at a glance (GET /api/players/stats) -->
+        <section class="section" aria-labelledby="glance-title">
+            <div class="container">
+                <header class="section__header">
+                    <p class="eyebrow">Squad at a glance</p>
+                    <h2 id="glance-title">This season in numbers</h2>
+                </header>
+                <p id="glance-status" class="status" role="status">Loading stats…</p>
+                <div class="card-grid" id="glance-grid"></div>
+                <p><a class="btn btn--outline" href="squad.html">See the full squad</a></p>
+            </div>
+        </section>
+
         <!-- Contact call to action -->
         <section class="section" aria-labelledby="contact-title">
             <div class="container">
@@ -135,6 +148,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/home.js" defer></script>
 </body>
 

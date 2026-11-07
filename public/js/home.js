@@ -1,39 +1,65 @@
-/* Home: datos del club (GET /api/teams/:id) y próximo partido (GET /api/matches?status=upcoming) */
+/* home.js — página de inicio.
+   GET /api/teams/1                                  datos del club
+   GET /api/matches?status=upcoming&teamId=1&limit=1 próximo partido
+   GET /api/players/stats                            resumen de la plantilla */
 (function () {
     'use strict';
-    const { api, OWN_TEAM_ID, esc, formatDate, formatTime } = CUNEF;
 
     const stadium = document.getElementById('club-stadium');
     const founded = document.getElementById('club-founded');
     const nextMatch = document.getElementById('next-match');
+    const glanceGrid = document.getElementById('glance-grid');
+    const glanceStatus = document.getElementById('glance-status');
 
-    async function load() {
-        const [team, matches] = await Promise.allSettled([
-            api.get(`/api/teams/${OWN_TEAM_ID}`),
-            api.get('/api/matches', { status: 'upcoming', teamId: OWN_TEAM_ID, limit: 1 })
-        ]);
-
-        // Si la API falla, se queda el contenido estático del HTML
-        if (team.status === 'fulfilled') {
-            const t = team.value;
-            if (t.stadium) stadium.textContent = t.stadium;
-            if (t.creationDate) {
-                const year = t.creationDate.slice(0, 4);
-                founded.textContent = year;
-                founded.setAttribute('datetime', t.creationDate);
-            }
+    async function loadClub() {
+        try {
+            const team = await apiRequest('GET', `/api/teams/${OWN_TEAM_ID}`);
+            stadium.textContent = team.stadium;
+            founded.textContent = team.creationDate.slice(0, 4);
+            founded.setAttribute('datetime', team.creationDate);
+        } catch {
+            // si falla, se queda el texto que ya trae el HTML
         }
+    }
 
-        if (matches.status === 'fulfilled') {
-            const m = matches.value.data[0];
-            nextMatch.innerHTML = m
-                ? `${esc(m.homeTeam.name)} vs ${esc(m.awayTeam.name)}<br>
-                   <a href="Season.html">${esc(formatDate(m.date, { month: 'short', day: 'numeric' }))} · ${esc(formatTime(m.date))}</a>`
-                : 'No upcoming matches';
-        } else {
+    async function loadNextMatch() {
+        try {
+            const [m] = await apiRequest('GET', '/api/matches' + query({ status: 'upcoming', teamId: OWN_TEAM_ID, limit: 1 }));
+            nextMatch.replaceChildren(...(m
+                ? [`${m.homeTeam.name} vs ${m.awayTeam.name}`, el('br'),
+                    el('a', { href: 'Season.html' }, `${formatDate(m.date, { month: 'short', day: 'numeric' })} · ${formatTime(m.date)}`)]
+                : ['No upcoming matches']));
+        } catch {
             nextMatch.textContent = 'Unavailable right now';
         }
     }
 
-    load();
+    const statCard = (title, value, unit, note) => el('article', { className: 'stat-card card' },
+        el('h3', {}, title),
+        el('p', { className: 'stat-card__value' }, value, el('span', {}, unit)),
+        note && el('p', { className: 'stat-card__player' }, note));
+
+    async function loadStats() {
+        setStatus(glanceStatus, 'Loading stats…');
+        try {
+            const s = await apiRequest('GET', '/api/players/stats');
+            if (!s.total) {
+                glanceGrid.replaceChildren();
+                return setStatus(glanceStatus, 'No players in the squad yet.');
+            }
+            glanceGrid.replaceChildren(
+                statCard('Players', s.total, 'in the squad', `${s.available} available · ${s.injured} injured`),
+                statCard('Goals', s.totalGoals, 'scored', `${s.averageGoals} per player`),
+                statCard('Top scorer', s.leaders.goals.value, 'goals', s.leaders.goals.name),
+                statCard('Average age', s.averageAge, 'years', Object.entries(s.byPosition).map(([pos, n]) => `${n} ${pos}s`).join(' · ')));
+            setStatus(glanceStatus, '');
+        } catch (err) {
+            glanceGrid.replaceChildren();
+            setStatus(glanceStatus, err.message, 'error');
+        }
+    }
+
+    loadClub();
+    loadNextMatch();
+    loadStats();
 })();

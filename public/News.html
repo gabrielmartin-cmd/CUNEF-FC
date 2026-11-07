@@ -48,14 +48,14 @@
             </div>
         </section>
 
-        <!-- Post news: only visible to players (POST /api/news) -->
-        <section class="section" aria-labelledby="post-title" data-roles="player" hidden>
+        <!-- Post / edit news: players and admin (POST /api/news, PUT /api/news/:id) -->
+        <section class="section" aria-labelledby="post-title" data-roles="player admin" hidden>
             <div class="container">
                 <header class="section__header">
-                    <p class="eyebrow">Players only</p>
+                    <p class="eyebrow">Players and staff</p>
                     <h2 id="post-title">Post news</h2>
                 </header>
-                <form id="news-form" class="form form--wide">
+                <form id="news-form" class="form form--wide" novalidate>
                     <div class="field">
                         <label for="news-title">Title</label>
                         <input type="text" id="news-title" name="title" maxlength="120" required>
@@ -64,13 +64,17 @@
                         <label for="news-info">Information</label>
                         <textarea id="news-info" name="information" maxlength="2000" required></textarea>
                     </div>
-                    <p id="news-form-msg" role="status" hidden></p>
-                    <button type="submit">Publish</button>
+                    <p class="form__error" data-form-error role="alert" hidden></p>
+                    <p id="news-form-msg" class="form__success" role="status" hidden></p>
+                    <div class="card__actions">
+                        <button type="submit" id="news-submit">Publish</button>
+                        <button type="button" id="news-cancel" class="btn--outline" hidden>Cancel editing</button>
+                    </div>
                 </form>
             </div>
         </section>
 
-        <!-- News list (GET /api/news?page=&limit=) -->
+        <!-- News list (GET /api/news) -->
         <section class="section" aria-labelledby="news-title-h">
             <div class="container">
                 <header class="section__header">
@@ -79,11 +83,6 @@
                 </header>
                 <p id="news-status" class="status" role="status">Loading news…</p>
                 <div class="card-grid" id="news-list"></div>
-                <nav class="pager" aria-label="News pages">
-                    <button type="button" id="news-prev" class="btn--outline btn--small" disabled>Previous</button>
-                    <span id="news-page" aria-live="polite"></span>
-                    <button type="button" id="news-next" class="btn--outline btn--small" disabled>Next</button>
-                </nav>
             </div>
         </section>
 
@@ -117,6 +116,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/news.js" defer></script>
 </body>
 

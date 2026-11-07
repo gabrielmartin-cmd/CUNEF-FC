@@ -65,6 +65,7 @@
                     </div>
                     <div class="toolbar__group">
                         <label for="type-filter">Type</label>
+                        <!-- Same values as TYPES in src/validators/trainingSessionValidator.js -->
                         <select id="type-filter">
                             <option value="">All</option>
                             <option value="tactical">Tactical</option>
@@ -86,7 +87,8 @@
         </section>
     </main>
 
-    <!-- Admin: create / edit session (POST / PATCH /api/training-sessions) -->
+    <!-- Admin: create / edit session (POST /api/training-sessions, PUT /api/training-sessions/:id).
+         Same rules as src/validators/trainingSessionValidator.js -->
     <dialog id="session-dialog" class="dialog" aria-labelledby="session-title">
         <form id="session-form" class="dialog__body" novalidate>
             <h2 id="session-title" class="dialog__title">New session</h2>
@@ -122,7 +124,7 @@
                 <input type="checkbox" id="s-public" name="isPublic">
                 <label for="s-public">Public session (visible to visitors and fans)</label>
             </div>
-            <p id="session-error" class="form__error" role="alert" hidden></p>
+            <p class="form__error" data-form-error role="alert" hidden></p>
             <div class="dialog__actions">
                 <button type="button" id="session-cancel" class="btn--outline">Cancel</button>
                 <button type="submit">Save session</button>
@@ -159,6 +161,7 @@
     </footer>
 
     <script src="js/api.js" defer></script>
+    <script src="js/ui.js" defer></script>
     <script src="js/training.js" defer></script>
 </body>
 
