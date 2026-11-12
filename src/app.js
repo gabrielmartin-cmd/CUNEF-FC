@@ -25,6 +25,23 @@ app.use((req, res, next) => {
     next();
 });
 
+// CORS solo para desarrollo: deja que la web abierta con doble clic (origen "null", file://) o con
+// Live Server (http://127.0.0.1:5500) pida datos a esta API. Desde http://localhost:3000 no hace falta.
+app.use('/api', (req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin === 'null' || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '')) {
+        res.set({
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Expose-Headers': 'Location',
+            Vary: 'Origin'
+        });
+        if (req.method === 'OPTIONS') return res.status(204).end();     // "preflight" del navegador
+    }
+    next();
+});
+
 // ---------- 2. Front end ----------
 // Sirve public/ (index.html, css, js...) en http://localhost:3000. Va ANTES de la API porque es lo
 // más pedido y no choca con ella: ningún archivo de public/ empieza por /api.

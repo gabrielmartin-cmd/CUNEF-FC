@@ -264,7 +264,7 @@ porque son recursos.
   Justo después del middleware común (JSON, logger, cabeceras) y **antes** de los routers de `/api`. Así una petición
   de página (`/squad.html`, `/Styles.css`) se responde enseguida sin pasar por los routers, y no hay conflicto
   porque ningún archivo de `public/` empieza por `/api`. Va antes del 404 en JSON y del gestor de errores, que
-  siempre son los últimos. Web y API comparten servidor y origen (`http://localhost:3000`), así que no hace falta CORS.
+  siempre son los últimos. Web y API comparten servidor y origen (`http://localhost:3000`). Para desarrollo hay además un CORS limitado a `localhost` y a `file://`, que permite abrir los `.html` con doble clic o con Live Server (ver `API_BASE` en `public/js/api.js`).
 - **Why searching and filtering happen on the server.**
   El servidor es quien tiene todos los datos: el navegador solo descarga lo que cumple el filtro (menos datos si la lista
   crece) y la misma búsqueda sirve igual para la web, Postman o cualquier otro cliente. Además, la validación

@@ -6,7 +6,8 @@
        const created = await apiRequest('POST', '/api/players', { name: 'Lucas', ... });
        await apiRequest('DELETE', '/api/players/7');
 
-   - La página y la API viven en el mismo servidor (http://localhost:3000), así que las rutas son relativas.
+   - Lo normal es abrir la web en http://localhost:3000 (mismo servidor que la API, rutas relativas).
+     También funciona abriendo el .html con doble clic o con Live Server: ver API_BASE.
    - Si hay sesión, añade el token en la cabecera Authorization (lo leen los middleware de src/middleware/auth.js).
    - fetch NO lanza error con un 404 o un 500: por eso miramos response.ok nosotros y, si falla,
      lanzamos un ApiError con el código, el mensaje y la lista de errores por campo (en los 400). */
@@ -26,7 +27,13 @@ const auth = {
     clear() { try { localStorage.removeItem(SESSION_KEY); } catch { /* modo privado */ } }
 };
 
-const WRONG_ORIGIN = 'The data comes from the API: run "npm start" and open the site at http://localhost:3000 (not the HTML file or Live Server).';
+// ¿A qué servidor se piden los datos?
+// - Página servida por Express (http://localhost:3000): rutas relativas, mismo origen.
+// - Página abierta con doble clic (file://) o con Live Server (puerto 55xx): la API sigue en
+//   http://localhost:3000, así que se le pide a ella (el servidor lo permite con CORS, ver app.js).
+const API_BASE = location.protocol === 'file:' || /^55\d\d$/.test(location.port) ? 'http://localhost:3000' : '';
+
+const WRONG_ORIGIN = 'The API did not answer: run "npm start" in the project folder and reload the page.';
 
 class ApiError extends Error {
     constructor(status, message, errors = []) {
@@ -37,20 +44,16 @@ class ApiError extends Error {
 }
 
 async function apiRequest(method, path, body) {
-    // La web y la API viven en el MISMO servidor. Abierta con doble clic (file://) o con Live Server,
-    // las rutas /api/... no llegan a Express: lo decimos claramente en vez de fallar sin más.
-    if (location.protocol === 'file:') throw new ApiError(0, WRONG_ORIGIN);
-
     const headers = {};
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (auth.token) headers.Authorization = `Bearer ${auth.token}`;
 
     let response;
     try {
-        response = await fetch(path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
+        response = await fetch(API_BASE + path, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });
     } catch {
         // Aquí solo se llega si NO hay respuesta (servidor apagado, sin red...).
-        throw new ApiError(0, 'Cannot reach the server. Is it running? (npm start)');
+        throw new ApiError(0, WRONG_ORIGIN);
     }
 
     if (response.status === 204) return null;                  // DELETE correcto: sin cuerpo
