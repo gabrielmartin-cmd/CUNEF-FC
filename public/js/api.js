@@ -26,6 +26,8 @@ const auth = {
     clear() { try { localStorage.removeItem(SESSION_KEY); } catch { /* modo privado */ } }
 };
 
+const WRONG_ORIGIN = 'The data comes from the API: run "npm start" and open the site at http://localhost:3000 (not the HTML file or Live Server).';
+
 class ApiError extends Error {
     constructor(status, message, errors = []) {
         super(message);
@@ -35,6 +37,10 @@ class ApiError extends Error {
 }
 
 async function apiRequest(method, path, body) {
+    // La web y la API viven en el MISMO servidor. Abierta con doble clic (file://) o con Live Server,
+    // las rutas /api/... no llegan a Express: lo decimos claramente en vez de fallar sin más.
+    if (location.protocol === 'file:') throw new ApiError(0, WRONG_ORIGIN);
+
     const headers = {};
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (auth.token) headers.Authorization = `Bearer ${auth.token}`;
@@ -51,6 +57,9 @@ async function apiRequest(method, path, body) {
 
     let data = null;
     try { data = await response.json(); } catch { /* respuesta sin JSON */ }
+
+    // Nuestra API siempre responde JSON: si no lo es, la petición la ha contestado otro servidor (p. ej. Live Server).
+    if (data === null && !response.ok) throw new ApiError(response.status, WRONG_ORIGIN);
 
     if (!response.ok) {
         // Token caducado o inválido: cerramos la sesión para que la página se vea como visitante.
